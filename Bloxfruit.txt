@@ -1,5 +1,5 @@
 -- ============================================================
--- HDANH x REDZ | FULL BUILD - RAYFIELD FIXED
+-- HDANH x REDZ | FULL 100% - CUSTOM UI (ALL FEATURES)
 -- ============================================================
 local Players           = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -8,6 +8,7 @@ local RunService        = game:GetService("RunService")
 local TweenService      = game:GetService("TweenService")
 local VirtualUser       = game:GetService("VirtualUser")
 local Lighting          = game:GetService("Lighting")
+local CoreGui           = game:GetService("CoreGui")
 
 local Player    = Players.LocalPlayer
 local PlayerGui = Player:WaitForChild("PlayerGui", 10)
@@ -27,31 +28,253 @@ local SEA = (game.PlaceId == 2753915549 or game.PlaceId == 85211729168715) and 1
          or 0
 
 -- ============================================================
--- LOAD RAYFIELD
+-- UI TỰ CODE (CỰC NHẸ, KO LOADSTRING)
 -- ============================================================
-local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+local MainGui = Instance.new("ScreenGui")
+MainGui.Name = "HDanhRedz"
+MainGui.ResetOnSpawn = false
+pcall(function() MainGui.Parent = CoreGui end)
+if not MainGui.Parent then MainGui.Parent = PlayerGui end
 
-local Window = Rayfield:CreateWindow({
-    Name = "HDanh x Redz | Sea " .. tostring(SEA),
-    LoadingTitle = "Đang tải script...",
-    LoadingSubtitle = "by Axiom Merge",
-    ConfigurationSaving = {
-        Enabled = false,
-        FolderName = nil, 
-        FileName = "HDanhRedz"
-    },
-    KeySystem = false
-})
+local ToggleBtn = Instance.new("TextButton")
+ToggleBtn.Size = UDim2.new(0, 70, 0, 35)
+ToggleBtn.Position = UDim2.new(0, 15, 0, 150)
+ToggleBtn.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+ToggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+ToggleBtn.Font = Enum.Font.GothamBold
+ToggleBtn.TextSize = 14
+ToggleBtn.Text = "MENU"
+ToggleBtn.BorderSizePixel = 2
+ToggleBtn.BorderColor3 = Color3.fromRGB(0, 255, 255)
+ToggleBtn.ZIndex = 500
+ToggleBtn.Parent = MainGui
+Instance.new("UICorner", ToggleBtn).CornerRadius = UDim.new(0.2, 0)
 
-Rayfield:Notify({
-    Title = "HDanh x Redz",
-    Content = "Menu đã sẵn sàng! SEA: " .. tostring(SEA),
-    Duration = 4,
-    Image = 4483362458
-})
+local Frame = Instance.new("Frame")
+Frame.Size = UDim2.new(0, 500, 0, 300)
+Frame.Position = UDim2.new(0.5, -250, 0.5, -150)
+Frame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+Frame.BorderSizePixel = 2
+Frame.BorderColor3 = Color3.fromRGB(0, 255, 255)
+Frame.Active = true
+Frame.Draggable = true
+Frame.ZIndex = 400
+Frame.Parent = MainGui
+Instance.new("UICorner", Frame).CornerRadius = UDim.new(0.03, 0)
+
+local TitleBar = Instance.new("Frame")
+TitleBar.Size = UDim2.new(1, 0, 0, 35)
+TitleBar.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+TitleBar.ZIndex = 401
+TitleBar.Parent = Frame
+Instance.new("UICorner", TitleBar).CornerRadius = UDim.new(0.1, 0)
+
+local Title = Instance.new("TextLabel")
+Title.Size = UDim2.new(1, -50, 1, 0)
+Title.Position = UDim2.new(0, 15, 0, 0)
+Title.BackgroundTransparency = 1
+Title.Text = "HDanh x Redz | Full | Sea " .. tostring(SEA)
+Title.TextColor3 = Color3.fromRGB(0, 255, 255)
+Title.Font = Enum.Font.GothamBold
+Title.TextSize = 16
+Title.TextXAlignment = Enum.TextXAlignment.Left
+Title.ZIndex = 402
+Title.Parent = TitleBar
+
+local Close = Instance.new("TextButton")
+Close.Size = UDim2.new(0, 25, 0, 25)
+Close.Position = UDim2.new(1, -30, 0, 5)
+Close.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
+Close.Text = "X"
+Close.TextColor3 = Color3.fromRGB(255, 255, 255)
+Close.Font = Enum.Font.GothamBold
+Close.TextSize = 14
+Close.BorderSizePixel = 0
+Close.ZIndex = 402
+Close.Parent = TitleBar
+Instance.new("UICorner", Close).CornerRadius = UDim.new(0.2, 0)
+
+local TabBar = Instance.new("ScrollingFrame")
+TabBar.Size = UDim2.new(0, 110, 1, -35)
+TabBar.Position = UDim2.new(0, 0, 0, 35)
+TabBar.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+TabBar.BorderSizePixel = 0
+TabBar.ScrollBarThickness = 2
+TabBar.ZIndex = 401
+TabBar.Parent = Frame
+
+local Content = Instance.new("ScrollingFrame")
+Content.Size = UDim2.new(1, -120, 1, -45)
+Content.Position = UDim2.new(0, 115, 0, 40)
+Content.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+Content.BorderSizePixel = 0
+Content.ScrollBarThickness = 3
+Content.ScrollBarImageColor3 = Color3.fromRGB(0, 255, 255)
+Content.CanvasSize = UDim2.new(0, 0, 0, 0)
+Content.ZIndex = 401
+Content.Parent = Frame
+
+ToggleBtn.MouseButton1Click:Connect(function() Frame.Visible = not Frame.Visible end)
+Close.MouseButton1Click:Connect(function() Frame.Visible = false end)
+
+local Tabs = {}
+local ActiveTab = nil
+local function CreateTab(name)
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(1, -10, 0, 30)
+    btn.Position = UDim2.new(0, 5, 0, 5 + (#Tabs * 35))
+    btn.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+    btn.Text = name
+    btn.TextColor3 = Color3.fromRGB(200, 200, 200)
+    btn.Font = Enum.Font.GothamSemibold
+    btn.TextSize = 12
+    btn.BorderSizePixel = 0
+    btn.ZIndex = 402
+    btn.Parent = TabBar
+    Instance.new("UICorner", btn).CornerRadius = UDim.new(0.15, 0)
+
+    local frame = Instance.new("Frame")
+    frame.Size = UDim2.new(1, 0, 1, 0)
+    frame.BackgroundTransparency = 1
+    frame.Visible = false
+    frame.ZIndex = 402
+    frame.Parent = Content
+
+    local tab = { Btn = btn, Frame = frame, Name = name }
+    table.insert(Tabs, tab)
+
+    btn.MouseButton1Click:Connect(function()
+        for _, t in pairs(Tabs) do
+            t.Frame.Visible = false
+            t.Btn.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+            t.Btn.TextColor3 = Color3.fromRGB(200, 200, 200)
+        end
+        frame.Visible = true
+        btn.BackgroundColor3 = Color3.fromRGB(0, 255, 255)
+        btn.TextColor3 = Color3.fromRGB(0, 0, 0)
+        ActiveTab = name
+    end)
+
+    if not ActiveTab then
+        frame.Visible = true
+        btn.BackgroundColor3 = Color3.fromRGB(0, 255, 255)
+        btn.TextColor3 = Color3.fromRGB(0, 0, 0)
+        ActiveTab = name
+    end
+    
+    TabBar.CanvasSize = UDim2.new(0, 0, 0, #Tabs * 35 + 10)
+    return frame
+end
+
+local function AddSection(parent, text)
+    local f = Instance.new("Frame")
+    f.Size = UDim2.new(1, -10, 0, 25)
+    f.Position = UDim2.new(0, 5, 0, #parent:GetChildren() * 35 + 5)
+    f.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+    f.BorderSizePixel = 0
+    f.ZIndex = 402
+    f.Parent = parent
+    Instance.new("UICorner", f).CornerRadius = UDim.new(0.2, 0)
+    local lbl = Instance.new("TextLabel", f)
+    lbl.Size = UDim2.new(1, -10, 1, 0)
+    lbl.Position = UDim2.new(0, 10, 0, 0)
+    lbl.BackgroundTransparency = 1
+    lbl.Text = text
+    lbl.TextColor3 = Color3.fromRGB(0, 255, 255)
+    lbl.Font = Enum.Font.GothamBold
+    lbl.TextSize = 12
+    lbl.TextXAlignment = Enum.TextXAlignment.Left
+    lbl.ZIndex = 403
+    parent.CanvasSize = UDim2.new(0, 0, 0, #parent:GetChildren() * 35 + 10)
+end
+
+local function AddButton(parent, text, callback)
+    local b = Instance.new("TextButton")
+    b.Size = UDim2.new(1, -20, 0, 30)
+    b.Position = UDim2.new(0, 10, 0, #parent:GetChildren() * 35 + 5)
+    b.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    b.Text = text
+    b.TextColor3 = Color3.fromRGB(255, 255, 255)
+    b.Font = Enum.Font.Gotham
+    b.TextSize = 12
+    b.BorderSizePixel = 0
+    b.ZIndex = 402
+    b.Parent = parent
+    Instance.new("UICorner", b).CornerRadius = UDim.new(0.2, 0)
+    b.MouseButton1Click:Connect(function() pcall(callback) end)
+    parent.CanvasSize = UDim2.new(0, 0, 0, #parent:GetChildren() * 35 + 10)
+end
+
+local function AddToggle(parent, text, default, callback)
+    local f = Instance.new("Frame")
+    f.Size = UDim2.new(1, -20, 0, 30)
+    f.Position = UDim2.new(0, 10, 0, #parent:GetChildren() * 35 + 5)
+    f.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    f.BorderSizePixel = 0
+    f.ZIndex = 402
+    f.Parent = parent
+    Instance.new("UICorner", f).CornerRadius = UDim.new(0.2, 0)
+    
+    local lbl = Instance.new("TextLabel", f)
+    lbl.Size = UDim2.new(1, -60, 1, 0)
+    lbl.Position = UDim2.new(0, 10, 0, 0)
+    lbl.BackgroundTransparency = 1
+    lbl.Text = text
+    lbl.TextColor3 = Color3.fromRGB(255, 255, 255)
+    lbl.Font = Enum.Font.Gotham
+    lbl.TextSize = 12
+    lbl.TextXAlignment = Enum.TextXAlignment.Left
+    lbl.ZIndex = 403
+    
+    local tBtn = Instance.new("TextButton")
+    tBtn.Size = UDim2.new(0, 40, 0, 20)
+    tBtn.Position = UDim2.new(1, -50, 0.5, -10)
+    tBtn.BackgroundColor3 = default and Color3.fromRGB(0, 255, 255) or Color3.fromRGB(80, 80, 80)
+    tBtn.Text = ""
+    tBtn.BorderSizePixel = 0
+    tBtn.ZIndex = 403
+    tBtn.Parent = f
+    Instance.new("UICorner", tBtn).CornerRadius = UDim.new(0.5, 0)
+    
+    local state = default
+    if callback then pcall(callback, state) end
+    
+    tBtn.MouseButton1Click:Connect(function()
+        state = not state
+        tBtn.BackgroundColor3 = state and Color3.fromRGB(0, 255, 255) or Color3.fromRGB(80, 80, 80)
+        if callback then pcall(callback, state) end
+    end)
+    parent.CanvasSize = UDim2.new(0, 0, 0, #parent:GetChildren() * 35 + 10)
+end
+
+local function AddDropdown(parent, text, options, default, callback)
+    local b = Instance.new("TextButton")
+    b.Size = UDim2.new(1, -20, 0, 30)
+    b.Position = UDim2.new(0, 10, 0, #parent:GetChildren() * 35 + 5)
+    b.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    b.Text = text .. ": " .. tostring(default)
+    b.TextColor3 = Color3.fromRGB(255, 255, 255)
+    b.Font = Enum.Font.Gotham
+    b.TextSize = 12
+    b.BorderSizePixel = 0
+    b.ZIndex = 402
+    b.Parent = parent
+    Instance.new("UICorner", b).CornerRadius = UDim.new(0.2, 0)
+    
+    local idx = 1
+    for i, v in ipairs(options) do if v == default then idx = i break end end
+    if callback then pcall(callback, options[idx]) end
+    
+    b.MouseButton1Click:Connect(function()
+        idx = idx % #options + 1
+        b.Text = text .. ": " .. tostring(options[idx])
+        if callback then pcall(callback, options[idx]) end
+    end)
+    parent.CanvasSize = UDim2.new(0, 0, 0, #parent:GetChildren() * 35 + 10)
+end
 
 -- ============================================================
--- HELPERS
+-- HELPERS LOGIC
 -- ============================================================
 local function round(n) return math.floor(tonumber(n) + 0.5) end
 local Number = math.random(1, 1000000)
@@ -305,62 +528,20 @@ function CheckLevel()
 end
 
 -- ============================================================
--- TAB MAIN: CÀY CẤP
+-- GẮN TÍNH NĂNG VÀO UI
 -- ============================================================
-local TabMain = Window:CreateTab("Cày Cấp", 4483362458)
-TabMain:CreateSection("Cày Cấp Tự Động")
-
-TabMain:CreateDropdown("SelectWeaponDrop", {
-    Name = "Vũ Khí",
-    Options = { "Melee", "Sword", "Gun", "Blox Fruit" },
-    CurrentOption = "Melee",
-    MultipleOptions = false,
-    Flag = "WeaponType",
-    Callback = function(Option)
-        SelectWeapon = Option
-    end
-})
-
-TabMain:CreateToggle("ToggleLevel", {
-    Name = "Cày Cấp",
-    CurrentValue = false,
-    Flag = "AutoLevel",
-    Callback = function(Value)
-        _G.AutoLevel = Value
-    end
-})
-
-TabMain:CreateToggle("ToggleMobAura", {
-    Name = "Đánh Quái Gần",
-    CurrentValue = false,
-    Flag = "AutoNear",
-    Callback = function(Value)
-        _G.AutoNear = Value
-    end
-})
-
-TabMain:CreateToggle("ToggleBring", {
-    Name = "Gom Quái",
-    CurrentValue = true,
-    Flag = "BringMob",
-    Callback = function(Value)
-        _G.BringMob = Value
-    end
-})
-
-TabMain:CreateToggle("ToggleOneHit", {
-    Name = "Đánh Nhanh (Clamp 25% HP)",
-    CurrentValue = false,
-    Flag = "OneHitKill",
-    Callback = function(Value)
-        _G.OneHitKill = Value
-    end
-})
+local TabMain = CreateTab("Cày Cấp")
+AddSection(TabMain, "Cày Cấp Tự Động")
+AddDropdown(TabMain, "Vũ Khí", {"Melee", "Sword", "Gun", "Blox Fruit"}, "Melee", function(v) SelectWeapon = v end)
+AddToggle(TabMain, "Cày Cấp", false, function(v) _G.AutoLevel = v end)
+AddToggle(TabMain, "Đánh Quái Gần", false, function(v) _G.AutoNear = v end)
+AddToggle(TabMain, "Gom Quái", true, function(v) _G.BringMob = v end)
+AddToggle(TabMain, "Đánh Nhanh (25% HP)", false, function(v) _G.OneHitKill = v end)
 
 _G.Fast_Delay = 1e-9
 bringmob = false
-FarmPos  = CFrame.new()
-MonFarm  = ""
+FarmPos = CFrame.new()
+MonFarm = ""
 
 task.spawn(function()
     while task.wait() do
@@ -491,75 +672,44 @@ spawn(function()
     end
 end)
 
--- ============================================================
 -- TAB TELEPORT
--- ============================================================
-local TabTele = Window:CreateTab("Dịch Chuyển", 4483362458)
-TabTele:CreateSection("Bay Đến Đảo")
-
+local TabTele = CreateTab("Dịch Chuyển")
+AddSection(TabTele, "Bay Đến Đảo")
 local Islands = {}
 if Sea1 then
     Islands = {
-        ["WindMill"] = CFrame.new(979.799, 16.516, 1429.047),
-        ["Marine"] = CFrame.new(-2566.43, 6.856, 2045.256),
-        ["Middle Town"] = CFrame.new(-690.331, 15.094, 1582.238),
-        ["Jungle"] = CFrame.new(-1612.796, 36.852, 149.128),
-        ["Pirate Village"] = CFrame.new(-1181.309, 4.751, 3803.546),
-        ["Desert"] = CFrame.new(944.158, 20.92, 4373.3),
-        ["Snow Island"] = CFrame.new(1347.807, 104.668, -1319.737),
-        ["MarineFord"] = CFrame.new(-4914.821, 50.964, 4281.028),
-        ["Magma Village"] = CFrame.new(-5247.716, 12.884, 8504.969),
-        ["Fountain City"] = CFrame.new(5127.128, 59.501, 4105.446),
-        ["Prison"] = CFrame.new(4875.33, 5.652, 734.85),
-        ["Colosseum"] = CFrame.new(-11.311, 29.277, 2771.522),
-        ["Under Water Island"] = CFrame.new(-2850.201, 7.392, 5354.993),
-        ["Shank Room"] = CFrame.new(-1442.166, 29.879, -28.355),
+        ["WindMill"] = CFrame.new(979.799, 16.516, 1429.047), ["Marine"] = CFrame.new(-2566.43, 6.856, 2045.256),
+        ["Middle Town"] = CFrame.new(-690.331, 15.094, 1582.238), ["Jungle"] = CFrame.new(-1612.796, 36.852, 149.128),
+        ["Pirate Village"] = CFrame.new(-1181.309, 4.751, 3803.546), ["Desert"] = CFrame.new(944.158, 20.92, 4373.3),
+        ["Snow Island"] = CFrame.new(1347.807, 104.668, -1319.737), ["MarineFord"] = CFrame.new(-4914.821, 50.964, 4281.028),
+        ["Magma Village"] = CFrame.new(-5247.716, 12.884, 8504.969), ["Fountain City"] = CFrame.new(5127.128, 59.501, 4105.446),
+        ["Prison"] = CFrame.new(4875.33, 5.652, 734.85), ["Colosseum"] = CFrame.new(-11.311, 29.277, 2771.522),
+        ["Under Water Island"] = CFrame.new(-2850.201, 7.392, 5354.993), ["Shank Room"] = CFrame.new(-1442.166, 29.879, -28.355),
         ["Mob Island"] = CFrame.new(-2850.201, 7.392, 5354.993),
     }
 elseif Sea2 then
     Islands = {
-        ["The Cafe"] = CFrame.new(-380.479, 77.22, 255.826),
-        ["Frist Spot"] = CFrame.new(-11.311, 29.277, 2771.522),
-        ["Dark Area"] = CFrame.new(3780.03, 22.652, -3498.586),
-        ["Factory"] = CFrame.new(424.127, 211.162, -427.54),
-        ["Colossuim"] = CFrame.new(-1503.622, 219.796, 1369.31),
-        ["Zombie Island"] = CFrame.new(753.143, 408.236, -5274.615),
-        ["Two Snow Mountain"] = CFrame.new(753.143, 408.236, -5274.615),
-        ["Punk Hazard"] = CFrame.new(-6127.654, 15.952, -5040.286),
-        ["Cursed Ship"] = CFrame.new(923.401, 125.057, 32885.875),
+        ["The Cafe"] = CFrame.new(-380.479, 77.22, 255.826), ["Frist Spot"] = CFrame.new(-11.311, 29.277, 2771.522),
+        ["Dark Area"] = CFrame.new(3780.03, 22.652, -3498.586), ["Factory"] = CFrame.new(424.127, 211.162, -427.54),
+        ["Colossuim"] = CFrame.new(-1503.622, 219.796, 1369.31), ["Zombie Island"] = CFrame.new(753.143, 408.236, -5274.615),
+        ["Punk Hazard"] = CFrame.new(-6127.654, 15.952, -5040.286), ["Cursed Ship"] = CFrame.new(923.401, 125.057, 32885.875),
         ["Forgotten Island"] = CFrame.new(-3032.764, 317.897, -10075.373),
     }
 elseif Sea3 then
     Islands = {
-        ["Mansion"] = CFrame.new(-12471.17, 374.94, -7551.678),
-        ["Port Town"] = CFrame.new(-290.737, 6.730, 5343.554),
-        ["Great Tree"] = CFrame.new(2681.274, 1682.809, -7190.985),
-        ["Hydra Island"] = CFrame.new(5291.249, 1005.443, 393.762),
-        ["Floating Turtle"] = CFrame.new(-13274.528, 531.821, -7579.223),
-        ["Haunted Castle"] = CFrame.new(-9515.372, 164.006, 5786.061),
-        ["Ice Cream Island"] = CFrame.new(-902.568, 79.932, -10988.848),
-        ["Peanut Island"] = CFrame.new(-2062.748, 50.474, -10232.568),
-        ["Cake Island"] = CFrame.new(-1884.775, 19.328, -11666.897),
-        ["Cocoa Island"] = CFrame.new(87.943, 73.555, -12319.465),
-        ["Candy Island"] = CFrame.new(-1014.424, 149.111, -14555.963),
-        ["Tiki Outpost"] = CFrame.new(-16218.683, 9.086, 445.618),
+        ["Mansion"] = CFrame.new(-12471.17, 374.94, -7551.678), ["Port Town"] = CFrame.new(-290.737, 6.730, 5343.554),
+        ["Great Tree"] = CFrame.new(2681.274, 1682.809, -7190.985), ["Hydra Island"] = CFrame.new(5291.249, 1005.443, 393.762),
+        ["Floating Turtle"] = CFrame.new(-13274.528, 531.821, -7579.223), ["Haunted Castle"] = CFrame.new(-9515.372, 164.006, 5786.061),
+        ["Ice Cream Island"] = CFrame.new(-902.568, 79.932, -10988.848), ["Peanut Island"] = CFrame.new(-2062.748, 50.474, -10232.568),
+        ["Cake Island"] = CFrame.new(-1884.775, 19.328, -11666.897), ["Cocoa Island"] = CFrame.new(87.943, 73.555, -12319.465),
+        ["Candy Island"] = CFrame.new(-1014.424, 149.111, -14555.963), ["Tiki Outpost"] = CFrame.new(-16218.683, 9.086, 445.618),
     }
 end
-
 local islandList = {}
 for k in pairs(Islands) do table.insert(islandList, k) end
 table.sort(islandList)
-
-TabTele:CreateDropdown("DropIsland", {
-    Name = "Chọn Đảo", Options = islandList, CurrentOption = islandList[1],
-    MultipleOptions = false, Flag = "SelectedIsland",
-    Callback = function(Option) _G.SelectIsland = Option end
-})
-
-TabTele:CreateToggle("ToggleAutoIsland", {
-    Name = "Bay Đến Đảo", CurrentValue = false, Flag = "AutoIsland",
-    Callback = function(Value) _G.TeleportIsland = Value end
-})
+AddDropdown(TabTele, "Chọn Đảo", islandList, islandList[1], function(v) _G.SelectIsland = v end)
+AddToggle(TabTele, "Bay Đến Đảo", false, function(v) _G.TeleportIsland = v end)
 
 task.spawn(function()
     while task.wait(0.5) do
@@ -569,32 +719,20 @@ task.spawn(function()
     end
 end)
 
-TabTele:CreateSection("Biển")
-TabTele:CreateButton("BtnSea1", { Name = "Biển 1",
-    Callback = function() ReplicatedStorage.Remotes.CommF_:InvokeServer("TravelMain") end })
-TabTele:CreateButton("BtnSea2", { Name = "Biển 2",
-    Callback = function() ReplicatedStorage.Remotes.CommF_:InvokeServer("TravelDressrosa") end })
-TabTele:CreateButton("BtnSea3", { Name = "Biển 3",
-    Callback = function() ReplicatedStorage.Remotes.CommF_:InvokeServer("TravelZou") end })
+AddSection(TabTele, "Biển")
+AddButton(TabTele, "Biển 1", function() ReplicatedStorage.Remotes.CommF_:InvokeServer("TravelMain") end)
+AddButton(TabTele, "Biển 2", function() ReplicatedStorage.Remotes.CommF_:InvokeServer("TravelDressrosa") end)
+AddButton(TabTele, "Biển 3", function() ReplicatedStorage.Remotes.CommF_:InvokeServer("TravelZou") end)
 
--- ============================================================
 -- TAB STATS
--- ============================================================
-local TabStats = Window:CreateTab("Chỉ Số", 4483362458)
-TabStats:CreateSection("Tự Động Nâng Điểm")
-
+local TabStats = CreateTab("Chỉ Số")
+AddSection(TabStats, "Tự Động Nâng Điểm")
 local sFlags = { Melee=false, Defense=false, Sword=false, Gun=false, Fruit=false }
-TabStats:CreateToggle("SPMelee", { Name="Melee", CurrentValue=false, Callback=function(v) sFlags.Melee=v end })
-TabStats:CreateToggle("SPDefense", { Name="Defense", CurrentValue=false, Callback=function(v) sFlags.Defense=v end })
-TabStats:CreateToggle("SPSword", { Name="Sword", CurrentValue=false, Callback=function(v) sFlags.Sword=v end })
-TabStats:CreateToggle("SPGun", { Name="Gun", CurrentValue=false, Callback=function(v) sFlags.Gun=v end })
-TabStats:CreateToggle("SPFruit", { Name="Devil Fruit", CurrentValue=false, Callback=function(v) sFlags.Fruit=v end })
-
-local ptsPerTick = 1
-TabStats:CreateSlider("SliderPts", {
-    Name = "Điểm mỗi tick", Range = { 1, 100 }, Increment = 1,
-    Suffix = "", CurrentValue = 1, Callback = function(v) ptsPerTick = v end
-})
+AddToggle(TabStats, "Melee", false, function(v) sFlags.Melee=v end)
+AddToggle(TabStats, "Defense", false, function(v) sFlags.Defense=v end)
+AddToggle(TabStats, "Sword", false, function(v) sFlags.Sword=v end)
+AddToggle(TabStats, "Gun", false, function(v) sFlags.Gun=v end)
+AddToggle(TabStats, "Devil Fruit", false, function(v) sFlags.Fruit=v end)
 
 task.spawn(function()
     while task.wait(0.4) do
@@ -608,7 +746,7 @@ task.spawn(function()
             if sFlags.Gun then table.insert(active, "Gun") end
             if sFlags.Fruit then table.insert(active, "Demon Fruit") end
             if #active == 0 then return end
-            local per = math.max(1, math.floor(ptsPerTick / #active))
+            local per = math.max(1, math.floor(1 / #active))
             for _, st in ipairs(active) do
                 ReplicatedStorage.Remotes.CommF_:InvokeServer("AddPoint", st, per)
             end
@@ -616,49 +754,29 @@ task.spawn(function()
     end
 end)
 
--- ============================================================
 -- TAB RAID
--- ============================================================
 if Sea2 or Sea3 then
-    local TabRaid = Window:CreateTab("Đột Kích", 4483362458)
-    TabRaid:CreateSection("Raid Cơ Bản")
-
+    local TabRaid = CreateTab("Đột Kích")
+    AddSection(TabRaid, "Raid")
     local chips = {"Flame","Ice","Quake","Light","Dark","Spider","Rumble","Magma","Buddha","Sand","Phoenix","Dough"}
     _G.SelectChip = "Flame"
-
-    TabRaid:CreateDropdown("DropChip", {
-        Name = "Chọn Chip", Options = chips, CurrentOption = "Flame",
-        MultipleOptions = false, Callback = function(v) _G.SelectChip = v end
-    })
-
-    TabRaid:CreateToggle("BuyChip", {
-        Name = "Mua Chip", CurrentValue = false,
-        Callback = function(v) _G.BuyChip = v end
-    })
-
+    AddDropdown(TabRaid, "Chọn Chip", chips, "Flame", function(v) _G.SelectChip = v end)
+    AddToggle(TabRaid, "Mua Chip", false, function(v) _G.BuyChip = v end)
     task.spawn(function()
         while wait() do
             if _G.BuyChip then
-                pcall(function()
-                    ReplicatedStorage.Remotes.CommF_:InvokeServer("RaidsNpc","Select",_G.SelectChip)
-                end)
+                pcall(function() ReplicatedStorage.Remotes.CommF_:InvokeServer("RaidsNpc","Select",_G.SelectChip) end)
             end
         end
     end)
-
-    TabRaid:CreateToggle("StartRaid", {
-        Name = "Bắt Đầu Raid", CurrentValue = false,
-        Callback = function(v) _G.StartRaid = v end
-    })
-
+    AddToggle(TabRaid, "Bắt Đầu Raid", false, function(v) _G.StartRaid = v end)
     task.spawn(function()
         while wait() do
             if _G.StartRaid then
                 pcall(function()
                     if PlayerGui.Main.Timer.Visible then return end
                     if Workspace._WorldOrigin.Locations:FindFirstChild("Island 1") then return end
-                    if not (Player.Backpack:FindFirstChild("Special Microchip")
-                         or Character:FindFirstChild("Special Microchip")) then return end
+                    if not (Player.Backpack:FindFirstChild("Special Microchip") or Character:FindFirstChild("Special Microchip")) then return end
                     if Sea2 then
                         Tween2(CFrame.new(-6438.735, 250.645, -4501.507))
                         ReplicatedStorage.Remotes.CommF_:InvokeServer("SetSpawnPoint")
@@ -673,12 +791,7 @@ if Sea2 or Sea3 then
             end
         end
     end)
-
-    TabRaid:CreateToggle("Dungeon", {
-        Name = "Đánh Quái Raid", CurrentValue = false,
-        Callback = function(v) _G.Dungeon = v end
-    })
-
+    AddToggle(TabRaid, "Đánh Quái Raid", false, function(v) _G.Dungeon = v end)
     task.spawn(function()
         while wait() do
             if _G.Dungeon then
@@ -686,9 +799,7 @@ if Sea2 or Sea3 then
                     local enemies = Workspace:FindFirstChild("Enemies")
                     if enemies then
                         for _, mob in pairs(enemies:GetChildren()) do
-                            if mob:FindFirstChild("Humanoid") and mob:FindFirstChild("HumanoidRootPart")
-                               and mob.Humanoid.Health > 0
-                               and (mob.HumanoidRootPart.Position - Root.Position).Magnitude <= 1000 then
+                            if mob:FindFirstChild("Humanoid") and mob:FindFirstChild("HumanoidRootPart") and mob.Humanoid.Health > 0 and (mob.HumanoidRootPart.Position - Root.Position).Magnitude <= 1000 then
                                 repeat
                                     task.wait(_G.Fast_Delay)
                                     AttackNoCoolDown()
@@ -706,17 +817,10 @@ if Sea2 or Sea3 then
     end)
 end
 
--- ============================================================
--- TAB ITEM (Kiếm)
--- ============================================================
-local TabItem = Window:CreateTab("Vật Phẩm", 4483362458)
-TabItem:CreateSection("Auto Lấy Kiếm")
-
-TabItem:CreateToggle("AutoSaber", {
-    Name = "Saber", CurrentValue = false,
-    Callback = function(v) _G.Auto_Saber = v end
-})
-
+-- TAB ITEM
+local TabItem = CreateTab("Vật Phẩm")
+AddSection(TabItem, "Auto Lấy Kiếm")
+AddToggle(TabItem, "Saber", false, function(v) _G.Auto_Saber = v end)
 task.spawn(function()
     while task.wait() do
         if _G.Auto_Saber then
@@ -742,11 +846,7 @@ task.spawn(function()
     end
 end)
 
-TabItem:CreateToggle("AutoPole", {
-    Name = "Pole V1 (Thunder God)", CurrentValue = false,
-    Callback = function(v) _G.AutoPole = v end
-})
-
+AddToggle(TabItem, "Pole V1 (Thunder God)", false, function(v) _G.AutoPole = v end)
 task.spawn(function()
     while task.wait() do
         if _G.AutoPole then
@@ -772,11 +872,7 @@ task.spawn(function()
     end
 end)
 
-TabItem:CreateToggle("AutoWando", {
-    Name = "Wando (Longma)", CurrentValue = false,
-    Callback = function(v) _G.Auto_Wando = v end
-})
-
+AddToggle(TabItem, "Wando (Longma)", false, function(v) _G.Auto_Wando = v end)
 task.spawn(function()
     while task.wait() do
         if _G.Auto_Wando then
@@ -802,11 +898,7 @@ task.spawn(function()
     end
 end)
 
-TabItem:CreateToggle("AutoYama", {
-    Name = "Yama", CurrentValue = false,
-    Callback = function(v) _G.AutoYama = v end
-})
-
+AddToggle(TabItem, "Yama", false, function(v) _G.AutoYama = v end)
 task.spawn(function()
     while wait() do
         if _G.AutoYama and ReplicatedStorage.Remotes.CommF_:InvokeServer("EliteHunter","Progress") >= 30 then
@@ -816,11 +908,7 @@ task.spawn(function()
     end
 end)
 
-TabItem:CreateToggle("AutoTushita", {
-    Name = "Tushita", CurrentValue = false,
-    Callback = function(v) _G.AutoTushita = v end
-})
-
+AddToggle(TabItem, "Tushita", false, function(v) _G.AutoTushita = v end)
 task.spawn(function()
     while task.wait() do
         if _G.AutoTushita then
@@ -846,11 +934,7 @@ task.spawn(function()
     end
 end)
 
-TabItem:CreateToggle("AutoCDK", {
-    Name = "Cursed Dual Katana", CurrentValue = false,
-    Callback = function(v) _G.Auto_CDK = v end
-})
-
+AddToggle(TabItem, "Cursed Dual Katana", false, function(v) _G.Auto_CDK = v end)
 task.spawn(function()
     while task.wait() do
         if _G.Auto_CDK then
@@ -875,18 +959,11 @@ task.spawn(function()
     end
 end)
 
--- ============================================================
 -- TAB EVENT (Sea 3)
--- ============================================================
 if Sea3 then
-    local TabEvent = Window:CreateTab("Sự Kiện", 4483362458)
-    TabEvent:CreateSection("Kitsune")
-
-    TabEvent:CreateToggle("AutoKitsune", {
-        Name = "Bay Đến Đảo Cáo", CurrentValue = false,
-        Callback = function(v) _G.TweenToKitsune = v end
-    })
-
+    local TabEvent = CreateTab("Sự Kiện")
+    AddSection(TabEvent, "Kitsune")
+    AddToggle(TabEvent, "Bay Đến Đảo Cáo", false, function(v) _G.TweenToKitsune = v end)
     task.spawn(function()
         while task.wait() do
             if _G.TweenToKitsune then
@@ -906,12 +983,8 @@ if Sea3 then
         end
     end)
 
-    TabEvent:CreateSection("Leviathan")
-    TabEvent:CreateToggle("AutoLev", {
-        Name = "Bay Đến Đảo Leviathan", CurrentValue = false,
-        Callback = function(v) _G.TweenToLev = v end
-    })
-
+    AddSection(TabEvent, "Leviathan")
+    AddToggle(TabEvent, "Bay Đến Đảo Leviathan", false, function(v) _G.TweenToLev = v end)
     task.spawn(function()
         while task.wait() do
             if _G.TweenToLev then
@@ -922,12 +995,8 @@ if Sea3 then
         end
     end)
 
-    TabEvent:CreateSection("Prehistoric")
-    TabEvent:CreateToggle("AutoPre", {
-        Name = "Bay Đến Đảo Dung Nham", CurrentValue = false,
-        Callback = function(v) _G.TweenToPre = v end
-    })
-
+    AddSection(TabEvent, "Prehistoric")
+    AddToggle(TabEvent, "Bay Đến Đảo Dung Nham", false, function(v) _G.TweenToPre = v end)
     task.spawn(function()
         while task.wait() do
             if _G.TweenToPre then
@@ -943,12 +1012,9 @@ if Sea3 then
     end)
 end
 
--- ============================================================
 -- TAB MISC
--- ============================================================
-local TabMisc = Window:CreateTab("Khác", 4483362458)
-TabMisc:CreateSection("Mã Code")
-
+local TabMisc = CreateTab("Khác")
+AddSection(TabMisc, "Mã Code")
 local CODES = {
     "NOMOREHACK","BANEXPLOIT","WildDares","BossBuild","GetPranked","EARN_FRUITS",
     "FIGHT4FRUIT","NOEXPLOITER","NOOB2ADMIN","CODESLIDE","ADMINHACKED","ADMINDARES",
@@ -959,94 +1025,59 @@ local CODES = {
     "Axiore","TantaiGaming","StrawHatMaine","Sub2OfficialNoobie","Fudd10","Bignews",
     "TheGreatAce","SECRET_ADMIN","SUB2GAMERROBOT_RESET1"
 }
+AddButton(TabMisc, "Nhập Tất Cả Code", function()
+    local r = ReplicatedStorage:FindFirstChild("Remotes") and ReplicatedStorage.Remotes:FindFirstChild("Redeem")
+    if not r then return end
+    for _, c in ipairs(CODES) do pcall(function() r:InvokeServer(c) end) task.wait(0.2) end
+end)
 
-TabMisc:CreateButton("BtnCodes", {
-    Name = "Nhập Tất Cả Code",
-    Callback = function()
-        local r = ReplicatedStorage:FindFirstChild("Remotes")
-                  and ReplicatedStorage.Remotes:FindFirstChild("Redeem")
-        if not r then return end
-        for _, c in ipairs(CODES) do
-            pcall(function() r:InvokeServer(c) end)
-            task.wait(0.2)
-        end
-    end
-})
-
-TabMisc:CreateSection("Server")
-TabMisc:CreateButton("BtnRejoin", { Name = "Rejoin", Callback = function()
-    game:GetService("TeleportService"):Teleport(game.PlaceId, Player)
-end })
-
-function Hop()
+AddSection(TabMisc, "Server")
+AddButton(TabMisc, "Rejoin", function() game:GetService("TeleportService"):Teleport(game.PlaceId, Player) end)
+AddButton(TabMisc, "Server Hop", function()
     local http = game:GetService("HttpService")
-    local cursor, seen = "", {}
-    while task.wait(1) do
-        local url = "https://games.roblox.com/v1/games/"..game.PlaceId.."/servers/Public?sortOrder=Asc&limit=100"..(cursor~="" and ("&cursor="..cursor) or "")
-        local ok, r = pcall(function() return http:JSONDecode(game:HttpGet(url)) end)
-        if not ok or not r or not r.data then return end
-        cursor = (r.nextPageCursor and r.nextPageCursor~="null") and r.nextPageCursor or ""
+    local url = "https://games.roblox.com/v1/games/"..game.PlaceId.."/servers/Public?sortOrder=Asc&limit=100"
+    local ok, r = pcall(function() return http:JSONDecode(game:HttpGet(url)) end)
+    if ok and r and r.data then
         for _, s in ipairs(r.data) do
-            if s.playing < s.maxPlayers and not seen[s.id] then
-                seen[s.id] = true
-                pcall(function()
-                    game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, s.id, Player)
-                end)
+            if s.playing < s.maxPlayers then
+                pcall(function() game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, s.id, Player) end)
                 return
             end
         end
-        if cursor == "" then break end
     end
-end
+end)
 
-TabMisc:CreateButton("BtnHop", { Name = "Server Hop", Callback = function() Hop() end })
+AddSection(TabMisc, "Phe")
+AddButton(TabMisc, "Hải Tặc", function() ReplicatedStorage.Remotes.CommF_:InvokeServer("SetTeam","Pirates") end)
+AddButton(TabMisc, "Hải Quân", function() ReplicatedStorage.Remotes.CommF_:InvokeServer("SetTeam","Marines") end)
 
-TabMisc:CreateSection("Phe")
-TabMisc:CreateButton("BtnPirate", { Name = "Hải Tặc", Callback = function()
-    ReplicatedStorage.Remotes.CommF_:InvokeServer("SetTeam","Pirates")
-end })
-TabMisc:CreateButton("BtnMarine", { Name = "Hải Quân", Callback = function()
-    ReplicatedStorage.Remotes.CommF_:InvokeServer("SetTeam","Marines")
-end })
-
-TabMisc:CreateSection("Cài Đặt")
-TabMisc:CreateButton("BtnFPS", { Name = "FPS Boost", Callback = function()
+AddSection(TabMisc, "Cài Đặt")
+AddButton(TabMisc, "FPS Boost", function()
     pcall(function()
         settings().Rendering.QualityLevel = "Level01"
         for _, v in pairs(game:GetDescendants()) do
-            if v:IsA("ParticleEmitter") or v:IsA("Trail") then
-                v.Lifetime = NumberRange.new(0)
-            elseif v:IsA("Fire") or v:IsA("Smoke") or v:IsA("Sparkles") then
-                v.Enabled = false
-            end
+            if v:IsA("ParticleEmitter") or v:IsA("Trail") then v.Lifetime = NumberRange.new(0)
+            elseif v:IsA("Fire") or v:IsA("Smoke") or v:IsA("Sparkles") then v.Enabled = false end
         end
         Lighting.GlobalShadows = false
         Lighting.FogEnd = 1e10
         Lighting.Brightness = 1
     end)
-end })
-
-TabMisc:CreateButton("BtnFog", { Name = "Xóa Sương Mù", Callback = function()
+end)
+AddButton(TabMisc, "Xóa Sương Mù", function()
     pcall(function()
         if Lighting:FindFirstChild("BaseAtmosphere") then Lighting.BaseAtmosphere:Destroy() end
         if Lighting:FindFirstChild("LightingLayers") then Lighting.LightingLayers:Destroy() end
         if Lighting:FindFirstChild("SeaTerrorCC") then Lighting.SeaTerrorCC:Destroy() end
         Lighting.FogEnd = 100000
     end)
-end })
+end)
 
--- ============================================================
--- ESP PLAYER (đơn giản)
--- ============================================================
-local TabVisual = Window:CreateTab("ESP", 4483362458)
-TabVisual:CreateSection("ESP Người Chơi")
-
+-- TAB ESP
+local TabVisual = CreateTab("ESP")
+AddSection(TabVisual, "ESP")
 ESPPlayer = false
-TabVisual:CreateToggle("ESPPlr", {
-    Name = "Bật ESP", CurrentValue = false,
-    Callback = function(v) ESPPlayer = v end
-})
-
+AddToggle(TabVisual, "Bật ESP Người Chơi", false, function(v) ESPPlayer = v end)
 task.spawn(function()
     while wait() do
         pcall(function()
@@ -1071,8 +1102,7 @@ task.spawn(function()
                             local d = round((Root.Position - head.Position).Magnitude/3)
                             local hp = round(p.Character.Humanoid.Health * 100 / p.Character.Humanoid.MaxHealth)
                             bg.TextLabel.Text = p.Name.." | "..d.." | HP "..hp.."%"
-                            bg.TextLabel.TextColor3 = (p.Team==Player.Team)
-                                and Color3.fromRGB(0,255,0) or Color3.fromRGB(255,0,0)
+                            bg.TextLabel.TextColor3 = (p.Team==Player.Team) and Color3.fromRGB(0,255,0) or Color3.fromRGB(255,0,0)
                         end
                     else
                         local e = head:FindFirstChild("NameEsp"..Number)
@@ -1084,4 +1114,4 @@ task.spawn(function()
     end
 end)
 
-print("[HDanh×Redz] Loaded OK | SEA " .. tostring(SEA))
+print("[HDanh×Redz] FULL 100% Custom UI Loaded | SEA " .. tostring(SEA))

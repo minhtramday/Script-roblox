@@ -1,5 +1,5 @@
 -- ============================================================
--- HDANH x REDZ | FULL 100% - CUSTOM UI (ALL FEATURES)
+-- HDANH x REDZ | FULL 100% - FIXED UI LAYOUT
 -- ============================================================
 local Players           = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -28,7 +28,7 @@ local SEA = (game.PlaceId == 2753915549 or game.PlaceId == 85211729168715) and 1
          or 0
 
 -- ============================================================
--- UI TỰ CODE (CỰC NHẸ, KO LOADSTRING)
+-- UI TỰ CODE (ĐÃ FIX LỖI ĐÈ NÚT)
 -- ============================================================
 local MainGui = Instance.new("ScreenGui")
 MainGui.Name = "HDanhRedz"
@@ -139,6 +139,7 @@ local function CreateTab(name)
     frame.Visible = false
     frame.ZIndex = 402
     frame.Parent = Content
+    frame:SetAttribute("ItemY", 5) -- BỘ ĐẾM TỌA ĐỘ Y
 
     local tab = { Btn = btn, Frame = frame, Name = name }
     table.insert(Tabs, tab)
@@ -166,10 +167,12 @@ local function CreateTab(name)
     return frame
 end
 
+-- FIX: Dùng Attribute ItemY để cộng dồn tọa độ, không dùng #GetChildren()
 local function AddSection(parent, text)
+    local currentY = parent:GetAttribute("ItemY") or 5
     local f = Instance.new("Frame")
     f.Size = UDim2.new(1, -10, 0, 25)
-    f.Position = UDim2.new(0, 5, 0, #parent:GetChildren() * 35 + 5)
+    f.Position = UDim2.new(0, 5, 0, currentY)
     f.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
     f.BorderSizePixel = 0
     f.ZIndex = 402
@@ -185,13 +188,16 @@ local function AddSection(parent, text)
     lbl.TextSize = 12
     lbl.TextXAlignment = Enum.TextXAlignment.Left
     lbl.ZIndex = 403
-    parent.CanvasSize = UDim2.new(0, 0, 0, #parent:GetChildren() * 35 + 10)
+    
+    parent:SetAttribute("ItemY", currentY + 35)
+    parent.CanvasSize = UDim2.new(0, 0, 0, currentY + 35 + 10)
 end
 
 local function AddButton(parent, text, callback)
+    local currentY = parent:GetAttribute("ItemY") or 5
     local b = Instance.new("TextButton")
     b.Size = UDim2.new(1, -20, 0, 30)
-    b.Position = UDim2.new(0, 10, 0, #parent:GetChildren() * 35 + 5)
+    b.Position = UDim2.new(0, 10, 0, currentY)
     b.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
     b.Text = text
     b.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -202,13 +208,16 @@ local function AddButton(parent, text, callback)
     b.Parent = parent
     Instance.new("UICorner", b).CornerRadius = UDim.new(0.2, 0)
     b.MouseButton1Click:Connect(function() pcall(callback) end)
-    parent.CanvasSize = UDim2.new(0, 0, 0, #parent:GetChildren() * 35 + 10)
+    
+    parent:SetAttribute("ItemY", currentY + 35)
+    parent.CanvasSize = UDim2.new(0, 0, 0, currentY + 35 + 10)
 end
 
 local function AddToggle(parent, text, default, callback)
+    local currentY = parent:GetAttribute("ItemY") or 5
     local f = Instance.new("Frame")
     f.Size = UDim2.new(1, -20, 0, 30)
-    f.Position = UDim2.new(0, 10, 0, #parent:GetChildren() * 35 + 5)
+    f.Position = UDim2.new(0, 10, 0, currentY)
     f.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
     f.BorderSizePixel = 0
     f.ZIndex = 402
@@ -244,13 +253,16 @@ local function AddToggle(parent, text, default, callback)
         tBtn.BackgroundColor3 = state and Color3.fromRGB(0, 255, 255) or Color3.fromRGB(80, 80, 80)
         if callback then pcall(callback, state) end
     end)
-    parent.CanvasSize = UDim2.new(0, 0, 0, #parent:GetChildren() * 35 + 10)
+    
+    parent:SetAttribute("ItemY", currentY + 35)
+    parent.CanvasSize = UDim2.new(0, 0, 0, currentY + 35 + 10)
 end
 
 local function AddDropdown(parent, text, options, default, callback)
+    local currentY = parent:GetAttribute("ItemY") or 5
     local b = Instance.new("TextButton")
     b.Size = UDim2.new(1, -20, 0, 30)
-    b.Position = UDim2.new(0, 10, 0, #parent:GetChildren() * 35 + 5)
+    b.Position = UDim2.new(0, 10, 0, currentY)
     b.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
     b.Text = text .. ": " .. tostring(default)
     b.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -270,7 +282,9 @@ local function AddDropdown(parent, text, options, default, callback)
         b.Text = text .. ": " .. tostring(options[idx])
         if callback then pcall(callback, options[idx]) end
     end)
-    parent.CanvasSize = UDim2.new(0, 0, 0, #parent:GetChildren() * 35 + 10)
+    
+    parent:SetAttribute("ItemY", currentY + 35)
+    parent.CanvasSize = UDim2.new(0, 0, 0, currentY + 35 + 10)
 end
 
 -- ============================================================
@@ -1114,4 +1128,4 @@ task.spawn(function()
     end
 end)
 
-print("[HDanh×Redz] FULL 100% Custom UI Loaded | SEA " .. tostring(SEA))
+print("[HDanh×Redz] FULL 100% Fixed Layout | SEA " .. tostring(SEA))

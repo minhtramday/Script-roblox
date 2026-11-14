@@ -1,6 +1,8 @@
 -- ============================================================
--- HDANH × REDZ | MERGED BUILD — MENU HIỆN NGAY KHI CHẠY
+-- HDANH x REDZ | MERGED FULL BUILD — ALL-IN-ONE
+-- UI: Rayfield | Đầy đủ: Farm, Teleport, Stats, Raid, Item, Event, Misc
 -- ============================================================
+
 local Players           = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace         = game:GetService("Workspace")
@@ -27,118 +29,33 @@ local SEA = (game.PlaceId == 2753915549 or game.PlaceId == 85211729168715) and 1
          or (game.PlaceId == 7449423635 or game.PlaceId == 100117331123089) and 3
          or 0
 
--- ============================================================
--- LOAD UI LIBRARY
--- ============================================================
-local ok, Library = pcall(function()
-    return loadstring(game:HttpGet(
-        "https://raw.githubusercontent.com/hdanhhub/UI/refs/heads/main/ui_BananaHub_final.lua"
-    ))()
+local Rayfield
+local ok = pcall(function()
+    Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 end)
-if not ok or not Library then
+if not ok or not Rayfield then
     game:GetService("StarterGui"):SetCore("SendNotification", {
-        Title = "Lỗi Load UI",
-        Text = "Không tải được library. Kiểm tra mạng hoặc executor.",
-        Duration = 5
+        Title = "Lỗi Load Menu", Text = "Không tải được Rayfield.", Duration = 5
     })
     return
 end
 
-local Window = Library:CreateWindow({
-    Title = "HDanh × Redz | Merged",
-    Desc  = "- Blox Fruit - SEA " .. tostring(SEA),
-    Image = "rbxassetid://123613996022560"
+local Window = Rayfield:CreateWindow({
+    Name = "HDanh x Redz | Sea " .. tostring(SEA),
+    LoadingTitle = "Đang tải script...",
+    LoadingSubtitle = "by Axiom Merge",
+    ConfigurationSaving = { Enabled = false },
+    KeySystem = false
 })
 
--- ============================================================
--- ÉP MENU HIỆN NGAY (fallback nếu library không tự mount)
--- ============================================================
-task.spawn(function()
-    task.wait(2)
-    -- Kiểm tra xem ScreenGui của library đã hiển thị chưa
-    local found = false
-    for _, gui in pairs(PlayerGui:GetChildren()) do
-        if gui:IsA("ScreenGui") and gui.Enabled and #gui:GetDescendants() > 10 then
-            found = true
-            break
-        end
-    end
-    if not found then
-        -- Di chuyển ScreenGui sang CoreGui nếu bị chặn
-        for _, gui in pairs(PlayerGui:GetChildren()) do
-            if gui:IsA("ScreenGui") and #gui:GetDescendants() > 10 then
-                pcall(function()
-                    gui.Parent = CoreGui
-                    gui.Enabled = true
-                end)
-            end
-        end
-    end
-end)
-
-pcall(function()
-    if Library.SetTheme then
-        Library:SetTheme({
-            Background = Color3.fromRGB(255, 182, 193),
-            Accent     = Color3.fromRGB(255, 20, 147),
-            PrimaryText = Color3.fromRGB(255, 255, 255),
-            SecondaryText = Color3.fromRGB(255, 220, 230),
-            Divider = Color3.fromRGB(255, 105, 180),
-            Header  = Color3.fromRGB(220, 20, 90),
-            Button  = Color3.fromRGB(255, 20, 147),
-            Hover   = Color3.fromRGB(255, 80, 160),
-            Toggle  = Color3.fromRGB(255, 20, 147),
-            Outline = Color3.fromRGB(255, 105, 180),
-        })
-    end
-end)
-
--- Nút toggle thủ công (nếu menu bị ẩn)
-task.spawn(function()
-    task.wait(1)
-    local btn = Instance.new("TextButton")
-    btn.Parent = PlayerGui
-    btn.Name = "AxiomToggle"
-    btn.Size = UDim2.new(0, 50, 0, 50)
-    btn.Position = UDim2.new(0, 15, 0.5, -25)
-    btn.BackgroundColor3 = Color3.fromRGB(255, 20, 147)
-    btn.TextColor3 = Color3.fromRGB(255, 255, 255)
-    btn.Font = Enum.Font.GothamBold
-    btn.TextSize = 20
-    btn.Text = "H"
-    btn.BorderSizePixel = 0
-    btn.ZIndex = 999
-    local c = Instance.new("UICorner", btn)
-    c.CornerRadius = UDim.new(0.3, 0)
-
-    local open = true
-    btn.MouseButton1Click:Connect(function()
-        open = not open
-        pcall(function()
-            if Window and Window.Toggle then Window:Toggle(open)
-            elseif Library.Toggle then Library:Toggle(open)
-            else
-                for _, g in pairs(PlayerGui:GetChildren()) do
-                    if g:IsA("ScreenGui") and g ~= btn.Parent then
-                        g.Enabled = open
-                    end
-                end
-            end
-        end)
-    end)
-end)
-
-task.wait(1)
-Library:Notify({
-    Title = "HDanh × Redz Merged",
-    Description = "Menu đã sẵn sàng. SEA: " .. tostring(SEA),
-    Duration = 4
+Rayfield:Notify({
+    Title = "HDanh x Redz", Content = "Menu đã sẵn sàng! SEA: " .. tostring(SEA),
+    Duration = 4, Image = 4483362458
 })
 
 -- ============================================================
 -- HELPERS
 -- ============================================================
-local function isNil(v) return v == nil end
 local function round(n) return math.floor(tonumber(n) + 0.5) end
 local Number = math.random(1, 1000000)
 
@@ -178,8 +95,7 @@ function SafeMove(targetCF, checkStop)
         if rem < 8 then break end
         local dir = (targetPos - curPos).Unit
         local step = math.min(rem, STEP_SIZE)
-        local nextCF = (rem <= STEP_SIZE) and targetCF
-                       or CFrame.new(curPos + dir * step)
+        local nextCF = (rem <= STEP_SIZE) and targetCF or CFrame.new(curPos + dir * step)
         pcall(function() hrp.CFrame = nextCF end)
         task.wait(STEP_WAIT)
     end
@@ -195,7 +111,6 @@ function Tween(cf)
     end)
 end
 Tween2 = Tween
-
 function BKP(cf) if Root then Root.CFrame = cf end end
 
 function AttackNoCoolDown()
@@ -214,24 +129,18 @@ function AttackNoCoolDown()
             end
         end
     else
-        local modNet = ReplicatedStorage:FindFirstChild("Modules")
-                    and ReplicatedStorage.Modules:FindFirstChild("Net")
+        local modNet = ReplicatedStorage:FindFirstChild("Modules") and ReplicatedStorage.Modules:FindFirstChild("Net")
         if not modNet then return end
         local regAtk = modNet:FindFirstChild("RE/RegisterAttack")
         local regHit = modNet:FindFirstChild("RE/RegisterHit")
         if not regAtk or not regHit then return end
-
         local hits, head = {}, nil
         for _, mob in pairs(enemies:GetChildren()) do
             local hum = mob:FindFirstChild("Humanoid")
             local hrp = mob:FindFirstChild("HumanoidRootPart")
-            if hum and hrp and hum.Health > 0
-               and (hrp.Position - Root.Position).Magnitude <= 60 then
+            if hum and hrp and hum.Health > 0 and (hrp.Position - Root.Position).Magnitude <= 60 then
                 local h = mob:FindFirstChild("Head")
-                if h then
-                    hits[#hits+1] = {mob, h}
-                    head = head or h
-                end
+                if h then hits[#hits+1] = {mob, h} head = head or h end
             end
         end
         if #hits > 0 then
@@ -245,391 +154,189 @@ end
 
 Sea1, Sea2, Sea3 = SEA == 1, SEA == 2, SEA == 3
 
--- ============================================================
--- CHECK LEVEL QUEST (rút gọn — đầy đủ bảng Sea1/2/3)
--- ============================================================
 function CheckLevel()
     local lvl = Player.Data.Level.Value
     if Sea1 then
-        if lvl <= 9 then
-            Ms, NameQuest, QuestLv, NameMon = "Bandit","BanditQuest1",1,"Bandit"
-            CFrameQ   = CFrame.new(1060.938, 16.455, 1547.784)
-            CFrameMon = CFrame.new(1038.553, 41.296, 1576.510)
-        elseif lvl <= 14 then
-            Ms, NameQuest, QuestLv, NameMon = "Monkey","JungleQuest",1,"Monkey"
-            CFrameQ   = CFrame.new(-1601.655, 36.852, 153.388)
-            CFrameMon = CFrame.new(-1448.145, 50.852, 63.607)
-        elseif lvl <= 29 then
-            Ms, NameQuest, QuestLv, NameMon = "Gorilla","JungleQuest",2,"Gorilla"
-            CFrameQ   = CFrame.new(-1601.655, 36.852, 153.388)
-            CFrameMon = CFrame.new(-1142.649, 40.462, -515.392)
-        elseif lvl <= 39 then
-            Ms, NameQuest, QuestLv, NameMon = "Pirate","BuggyQuest1",1,"Pirate"
-            CFrameQ   = CFrame.new(-1140.176, 4.752, 3827.406)
-            CFrameMon = CFrame.new(-1201.088, 40.629, 3857.597)
-        elseif lvl <= 59 then
-            Ms, NameQuest, QuestLv, NameMon = "Brute","BuggyQuest1",2,"Brute"
-            CFrameQ   = CFrame.new(-1140.176, 4.752, 3827.406)
-            CFrameMon = CFrame.new(-1387.532, 24.592, 4100.958)
-        elseif lvl <= 74 then
-            Ms, NameQuest, QuestLv, NameMon = "Desert Bandit","DesertQuest",1,"Desert Bandit"
-            CFrameQ   = CFrame.new(896.517, 6.438, 4390.149)
-            CFrameMon = CFrame.new(984.999, 16.110, 4417.910)
-        elseif lvl <= 89 then
-            Ms, NameQuest, QuestLv, NameMon = "Desert Officer","DesertQuest",2,"Desert Officer"
-            CFrameQ   = CFrame.new(896.517, 6.438, 4390.149)
-            CFrameMon = CFrame.new(1547.151, 14.452, 4381.800)
-        elseif lvl <= 99 then
-            Ms, NameQuest, QuestLv, NameMon = "Snow Bandit","SnowQuest",1,"Snow Bandit"
-            CFrameQ   = CFrame.new(1386.807, 87.273, -1298.358)
-            CFrameMon = CFrame.new(1356.303, 105.769, -1328.242)
-        elseif lvl <= 119 then
-            Ms, NameQuest, QuestLv, NameMon = "Snowman","SnowQuest",2,"Snowman"
-            CFrameQ   = CFrame.new(1386.807, 87.273, -1298.358)
-            CFrameMon = CFrame.new(1218.796, 138.012, -1488.026)
-        elseif lvl <= 149 then
-            Ms, NameQuest, QuestLv, NameMon = "Chief Petty Officer","MarineQuest2",1,"Chief Petty Officer"
-            CFrameQ   = CFrame.new(-5035.496, 28.678, 4324.184)
-            CFrameMon = CFrame.new(-4931.155, 65.793, 4121.839)
-        elseif lvl <= 174 then
-            Ms, NameQuest, QuestLv, NameMon = "Sky Bandit","SkyQuest",1,"Sky Bandit"
-            CFrameQ   = CFrame.new(-4842.137, 717.695, -2623.048)
-            CFrameMon = CFrame.new(-4955.641, 365.464, -2908.187)
-        elseif lvl <= 189 then
-            Ms, NameQuest, QuestLv, NameMon = "Dark Master","SkyQuest",2,"Dark Master"
-            CFrameQ   = CFrame.new(-4842.137, 717.695, -2623.048)
-            CFrameMon = CFrame.new(-5148.165, 439.046, -2332.961)
-        elseif lvl <= 209 then
-            Ms, NameQuest, QuestLv, NameMon = "Prisoner","PrisonerQuest",1,"Prisoner"
-            CFrameQ   = CFrame.new(5310.605, 0.350, 474.947)
-            CFrameMon = CFrame.new(4937.319, 0.332, 649.575)
-        elseif lvl <= 249 then
-            Ms, NameQuest, QuestLv, NameMon = "Dangerous Prisoner","PrisonerQuest",2,"Dangerous Prisoner"
-            CFrameQ   = CFrame.new(5310.605, 0.350, 474.947)
-            CFrameMon = CFrame.new(5099.663, 0.352, 1055.758)
-        elseif lvl <= 274 then
-            Ms, NameQuest, QuestLv, NameMon = "Toga Warrior","ColosseumQuest",1,"Toga Warrior"
-            CFrameQ   = CFrame.new(-1577.789, 7.415, -2984.484)
-            CFrameMon = CFrame.new(-1872.517, 49.080, -2913.811)
-        elseif lvl <= 299 then
-            Ms, NameQuest, QuestLv, NameMon = "Gladiator","ColosseumQuest",2,"Gladiator"
-            CFrameQ   = CFrame.new(-1577.789, 7.415, -2984.484)
-            CFrameMon = CFrame.new(-1521.374, 81.203, -3066.314)
-        elseif lvl <= 324 then
-            Ms, NameQuest, QuestLv, NameMon = "Military Soldier","MagmaQuest",1,"Military Soldier"
-            CFrameQ   = CFrame.new(-5316.116, 12.263, 8517.004)
-            CFrameMon = CFrame.new(-5369.000, 61.244, 8556.492)
-        elseif lvl <= 374 then
-            Ms, NameQuest, QuestLv, NameMon = "Military Spy","MagmaQuest",2,"Military Spy"
-            CFrameQ   = CFrame.new(-5316.116, 12.263, 8517.004)
-            CFrameMon = CFrame.new(-5787.003, 75.826, 8651.699)
-        elseif lvl <= 399 then
-            Ms, NameQuest, QuestLv, NameMon = "Fishman Warrior","FishmanQuest",1,"Fishman Warrior"
-            CFrameQ   = CFrame.new(61122.652, 18.497, 1569.400)
-            CFrameMon = CFrame.new(60844.105, 98.463, 1298.399)
-        elseif lvl <= 449 then
-            Ms, NameQuest, QuestLv, NameMon = "Fishman Commando","FishmanQuest",2,"Fishman Commando"
-            CFrameQ   = CFrame.new(61122.652, 18.497, 1569.400)
-            CFrameMon = CFrame.new(61738.398, 64.207, 1433.838)
-        elseif lvl <= 474 then
-            Ms, NameQuest, QuestLv, NameMon = "God's Guard","SkyExp1Quest",1,"God's Guard"
-            CFrameQ   = CFrame.new(-4721.860, 845.303, -1953.849)
-            CFrameMon = CFrame.new(-4628.050, 866.929, -1931.235)
-        elseif lvl <= 524 then
-            Ms, NameQuest, QuestLv, NameMon = "Shanda","SkyExp1Quest",2,"Shanda"
-            CFrameQ   = CFrame.new(-7863.160, 5545.519, -378.423)
-            CFrameMon = CFrame.new(-7685.147, 5601.075, -441.389)
-        elseif lvl <= 549 then
-            Ms, NameQuest, QuestLv, NameMon = "Royal Squad","SkyExp2Quest",1,"Royal Squad"
-            CFrameQ   = CFrame.new(-7903.383, 5635.990, -1410.924)
-            CFrameMon = CFrame.new(-7654.251, 5637.108, -1407.755)
-        elseif lvl <= 624 then
-            Ms, NameQuest, QuestLv, NameMon = "Royal Soldier","SkyExp2Quest",2,"Royal Soldier"
-            CFrameQ   = CFrame.new(-7903.383, 5635.990, -1410.924)
-            CFrameMon = CFrame.new(-7760.411, 5679.908, -1884.811)
-        elseif lvl <= 649 then
-            Ms, NameQuest, QuestLv, NameMon = "Galley Pirate","FountainQuest",1,"Galley Pirate"
-            CFrameQ   = CFrame.new(5258.279, 38.527, 4050.045)
-            CFrameMon = CFrame.new(5557.168, 152.327, 3998.776)
-        else
-            Ms, NameQuest, QuestLv, NameMon = "Galley Captain","FountainQuest",2,"Galley Captain"
-            CFrameQ   = CFrame.new(5258.279, 38.527, 4050.045)
-            CFrameMon = CFrame.new(5677.677, 92.786, 4966.632)
+        if lvl <= 9 then Ms, NameQuest, QuestLv, NameMon = "Bandit","BanditQuest1",1,"Bandit"
+            CFrameQ = CFrame.new(1060.938, 16.455, 1547.784) CFrameMon = CFrame.new(1038.553, 41.296, 1576.510)
+        elseif lvl <= 14 then Ms, NameQuest, QuestLv, NameMon = "Monkey","JungleQuest",1,"Monkey"
+            CFrameQ = CFrame.new(-1601.655, 36.852, 153.388) CFrameMon = CFrame.new(-1448.145, 50.852, 63.607)
+        elseif lvl <= 29 then Ms, NameQuest, QuestLv, NameMon = "Gorilla","JungleQuest",2,"Gorilla"
+            CFrameQ = CFrame.new(-1601.655, 36.852, 153.388) CFrameMon = CFrame.new(-1142.649, 40.462, -515.392)
+        elseif lvl <= 39 then Ms, NameQuest, QuestLv, NameMon = "Pirate","BuggyQuest1",1,"Pirate"
+            CFrameQ = CFrame.new(-1140.176, 4.752, 3827.406) CFrameMon = CFrame.new(-1201.088, 40.629, 3857.597)
+        elseif lvl <= 59 then Ms, NameQuest, QuestLv, NameMon = "Brute","BuggyQuest1",2,"Brute"
+            CFrameQ = CFrame.new(-1140.176, 4.752, 3827.406) CFrameMon = CFrame.new(-1387.532, 24.592, 4100.958)
+        elseif lvl <= 74 then Ms, NameQuest, QuestLv, NameMon = "Desert Bandit","DesertQuest",1,"Desert Bandit"
+            CFrameQ = CFrame.new(896.517, 6.438, 4390.149) CFrameMon = CFrame.new(984.999, 16.110, 4417.910)
+        elseif lvl <= 89 then Ms, NameQuest, QuestLv, NameMon = "Desert Officer","DesertQuest",2,"Desert Officer"
+            CFrameQ = CFrame.new(896.517, 6.438, 4390.149) CFrameMon = CFrame.new(1547.151, 14.452, 4381.800)
+        elseif lvl <= 99 then Ms, NameQuest, QuestLv, NameMon = "Snow Bandit","SnowQuest",1,"Snow Bandit"
+            CFrameQ = CFrame.new(1386.807, 87.273, -1298.358) CFrameMon = CFrame.new(1356.303, 105.769, -1328.242)
+        elseif lvl <= 119 then Ms, NameQuest, QuestLv, NameMon = "Snowman","SnowQuest",2,"Snowman"
+            CFrameQ = CFrame.new(1386.807, 87.273, -1298.358) CFrameMon = CFrame.new(1218.796, 138.012, -1488.026)
+        elseif lvl <= 149 then Ms, NameQuest, QuestLv, NameMon = "Chief Petty Officer","MarineQuest2",1,"Chief Petty Officer"
+            CFrameQ = CFrame.new(-5035.496, 28.678, 4324.184) CFrameMon = CFrame.new(-4931.155, 65.793, 4121.839)
+        elseif lvl <= 174 then Ms, NameQuest, QuestLv, NameMon = "Sky Bandit","SkyQuest",1,"Sky Bandit"
+            CFrameQ = CFrame.new(-4842.137, 717.695, -2623.048) CFrameMon = CFrame.new(-4955.641, 365.464, -2908.187)
+        elseif lvl <= 189 then Ms, NameQuest, QuestLv, NameMon = "Dark Master","SkyQuest",2,"Dark Master"
+            CFrameQ = CFrame.new(-4842.137, 717.695, -2623.048) CFrameMon = CFrame.new(-5148.165, 439.046, -2332.961)
+        elseif lvl <= 209 then Ms, NameQuest, QuestLv, NameMon = "Prisoner","PrisonerQuest",1,"Prisoner"
+            CFrameQ = CFrame.new(5310.605, 0.350, 474.947) CFrameMon = CFrame.new(4937.319, 0.332, 649.575)
+        elseif lvl <= 249 then Ms, NameQuest, QuestLv, NameMon = "Dangerous Prisoner","PrisonerQuest",2,"Dangerous Prisoner"
+            CFrameQ = CFrame.new(5310.605, 0.350, 474.947) CFrameMon = CFrame.new(5099.663, 0.352, 1055.758)
+        elseif lvl <= 274 then Ms, NameQuest, QuestLv, NameMon = "Toga Warrior","ColosseumQuest",1,"Toga Warrior"
+            CFrameQ = CFrame.new(-1577.789, 7.415, -2984.484) CFrameMon = CFrame.new(-1872.517, 49.080, -2913.811)
+        elseif lvl <= 299 then Ms, NameQuest, QuestLv, NameMon = "Gladiator","ColosseumQuest",2,"Gladiator"
+            CFrameQ = CFrame.new(-1577.789, 7.415, -2984.484) CFrameMon = CFrame.new(-1521.374, 81.203, -3066.314)
+        elseif lvl <= 324 then Ms, NameQuest, QuestLv, NameMon = "Military Soldier","MagmaQuest",1,"Military Soldier"
+            CFrameQ = CFrame.new(-5316.116, 12.263, 8517.004) CFrameMon = CFrame.new(-5369.000, 61.244, 8556.492)
+        elseif lvl <= 374 then Ms, NameQuest, QuestLv, NameMon = "Military Spy","MagmaQuest",2,"Military Spy"
+            CFrameQ = CFrame.new(-5316.116, 12.263, 8517.004) CFrameMon = CFrame.new(-5787.003, 75.826, 8651.699)
+        elseif lvl <= 399 then Ms, NameQuest, QuestLv, NameMon = "Fishman Warrior","FishmanQuest",1,"Fishman Warrior"
+            CFrameQ = CFrame.new(61122.652, 18.497, 1569.400) CFrameMon = CFrame.new(60844.105, 98.463, 1298.399)
+        elseif lvl <= 449 then Ms, NameQuest, QuestLv, NameMon = "Fishman Commando","FishmanQuest",2,"Fishman Commando"
+            CFrameQ = CFrame.new(61122.652, 18.497, 1569.400) CFrameMon = CFrame.new(61738.398, 64.207, 1433.838)
+        elseif lvl <= 474 then Ms, NameQuest, QuestLv, NameMon = "God's Guard","SkyExp1Quest",1,"God's Guard"
+            CFrameQ = CFrame.new(-4721.860, 845.303, -1953.849) CFrameMon = CFrame.new(-4628.050, 866.929, -1931.235)
+        elseif lvl <= 524 then Ms, NameQuest, QuestLv, NameMon = "Shanda","SkyExp1Quest",2,"Shanda"
+            CFrameQ = CFrame.new(-7863.160, 5545.519, -378.423) CFrameMon = CFrame.new(-7685.147, 5601.075, -441.389)
+        elseif lvl <= 549 then Ms, NameQuest, QuestLv, NameMon = "Royal Squad","SkyExp2Quest",1,"Royal Squad"
+            CFrameQ = CFrame.new(-7903.383, 5635.990, -1410.924) CFrameMon = CFrame.new(-7654.251, 5637.108, -1407.755)
+        elseif lvl <= 624 then Ms, NameQuest, QuestLv, NameMon = "Royal Soldier","SkyExp2Quest",2,"Royal Soldier"
+            CFrameQ = CFrame.new(-7903.383, 5635.990, -1410.924) CFrameMon = CFrame.new(-7760.411, 5679.908, -1884.811)
+        elseif lvl <= 649 then Ms, NameQuest, QuestLv, NameMon = "Galley Pirate","FountainQuest",1,"Galley Pirate"
+            CFrameQ = CFrame.new(5258.279, 38.527, 4050.045) CFrameMon = CFrame.new(5557.168, 152.327, 3998.776)
+        else Ms, NameQuest, QuestLv, NameMon = "Galley Captain","FountainQuest",2,"Galley Captain"
+            CFrameQ = CFrame.new(5258.279, 38.527, 4050.045) CFrameMon = CFrame.new(5677.677, 92.786, 4966.632)
         end
     elseif Sea2 then
-        if lvl <= 724 then
-            Ms, NameQuest, QuestLv, NameMon = "Raider","Area1Quest",1,"Raider"
-            CFrameQ   = CFrame.new(-427.726, 72.996, 1835.943)
-            CFrameMon = CFrame.new(68.875, 93.636, 2429.675)
-        elseif lvl <= 774 then
-            Ms, NameQuest, QuestLv, NameMon = "Mercenary","Area1Quest",2,"Mercenary"
-            CFrameQ   = CFrame.new(-427.726, 72.996, 1835.943)
-            CFrameMon = CFrame.new(-864.850, 122.471, 1453.151)
-        elseif lvl <= 799 then
-            Ms, NameQuest, QuestLv, NameMon = "Swan Pirate","Area2Quest",1,"Swan Pirate"
-            CFrameQ   = CFrame.new(635.612, 73.096, 917.813)
-            CFrameMon = CFrame.new(1065.367, 137.640, 1324.380)
-        elseif lvl <= 874 then
-            Ms, NameQuest, QuestLv, NameMon = "Factory Staff","Area2Quest",2,"Factory Staff"
-            CFrameQ   = CFrame.new(635.612, 73.096, 917.813)
-            CFrameMon = CFrame.new(533.220, 128.469, 355.626)
-        elseif lvl <= 899 then
-            Ms, NameQuest, QuestLv, NameMon = "Marine Lieutenant","MarineQuest3",1,"Marine Lieutenant"
-            CFrameQ   = CFrame.new(-2440.993, 73.042, -3217.708)
-            CFrameMon = CFrame.new(-2489.262, 84.614, -3151.883)
-        elseif lvl <= 949 then
-            Ms, NameQuest, QuestLv, NameMon = "Marine Captain","MarineQuest3",2,"Marine Captain"
-            CFrameQ   = CFrame.new(-2440.993, 73.042, -3217.708)
-            CFrameMon = CFrame.new(-2335.203, 79.787, -3245.867)
-        elseif lvl <= 974 then
-            Ms, NameQuest, QuestLv, NameMon = "Zombie","ZombieQuest",1,"Zombie"
-            CFrameQ   = CFrame.new(-5494.341, 48.506, -794.591)
-            CFrameMon = CFrame.new(-5536.497, 101.086, -835.591)
-        elseif lvl <= 999 then
-            Ms, NameQuest, QuestLv, NameMon = "Vampire","ZombieQuest",2,"Vampire"
-            CFrameQ   = CFrame.new(-5494.341, 48.506, -794.591)
-            CFrameMon = CFrame.new(-5806.110, 16.723, -1164.438)
-        elseif lvl <= 1049 then
-            Ms, NameQuest, QuestLv, NameMon = "Snow Trooper","SnowMountainQuest",1,"Snow Trooper"
-            CFrameQ   = CFrame.new(607.060, 401.448, -5370.555)
-            CFrameMon = CFrame.new(535.211, 432.742, -5484.917)
-        elseif lvl <= 1099 then
-            Ms, NameQuest, QuestLv, NameMon = "Winter Warrior","SnowMountainQuest",2,"Winter Warrior"
-            CFrameQ   = CFrame.new(607.060, 401.448, -5370.555)
-            CFrameMon = CFrame.new(1234.445, 456.954, -5174.131)
-        elseif lvl <= 1124 then
-            Ms, NameQuest, QuestLv, NameMon = "Lab Subordinate","IceSideQuest",1,"Lab Subordinate"
-            CFrameQ   = CFrame.new(-6061.842, 15.927, -4902.039)
-            CFrameMon = CFrame.new(-5720.558, 63.309, -4784.610)
-        elseif lvl <= 1174 then
-            Ms, NameQuest, QuestLv, NameMon = "Horned Warrior","IceSideQuest",2,"Horned Warrior"
-            CFrameQ   = CFrame.new(-6061.842, 15.927, -4902.039)
-            CFrameMon = CFrame.new(-6292.752, 91.182, -5502.650)
-        elseif lvl <= 1199 then
-            Ms, NameQuest, QuestLv, NameMon = "Magma Ninja","FireSideQuest",1,"Magma Ninja"
-            CFrameQ   = CFrame.new(-5429.047, 15.978, -5297.961)
-            CFrameMon = CFrame.new(-5461.839, 130.363, -5836.470)
-        elseif lvl <= 1249 then
-            Ms, NameQuest, QuestLv, NameMon = "Lava Pirate","FireSideQuest",2,"Lava Pirate"
-            CFrameQ   = CFrame.new(-5429.047, 15.978, -5297.961)
-            CFrameMon = CFrame.new(-5251.189, 55.165, -4774.410)
-        elseif lvl <= 1274 then
-            Ms, NameQuest, QuestLv, NameMon = "Ship Deckhand","ShipQuest1",1,"Ship Deckhand"
-            CFrameQ   = CFrame.new(1040.293, 125.083, 32911.039)
-            CFrameMon = CFrame.new(921.124, 125.984, 33088.328)
-        elseif lvl <= 1299 then
-            Ms, NameQuest, QuestLv, NameMon = "Ship Engineer","ShipQuest1",2,"Ship Engineer"
-            CFrameQ   = CFrame.new(1040.293, 125.083, 32911.039)
-            CFrameMon = CFrame.new(886.282, 40.478, 32800.832)
-        elseif lvl <= 1324 then
-            Ms, NameQuest, QuestLv, NameMon = "Ship Steward","ShipQuest2",1,"Ship Steward"
-            CFrameQ   = CFrame.new(971.421, 125.083, 33245.543)
-            CFrameMon = CFrame.new(943.855, 129.582, 33444.367)
-        elseif lvl <= 1349 then
-            Ms, NameQuest, QuestLv, NameMon = "Ship Officer","ShipQuest2",2,"Ship Officer"
-            CFrameQ   = CFrame.new(971.421, 125.083, 33245.543)
-            CFrameMon = CFrame.new(955.385, 181.083, 33331.891)
-        elseif lvl <= 1374 then
-            Ms, NameQuest, QuestLv, NameMon = "Arctic Warrior","FrostQuest",1,"Arctic Warrior"
-            CFrameQ   = CFrame.new(5668.137, 28.203, -6484.601)
-            CFrameMon = CFrame.new(5935.454, 77.260, -6472.757)
-        elseif lvl <= 1424 then
-            Ms, NameQuest, QuestLv, NameMon = "Snow Lurker","FrostQuest",2,"Snow Lurker"
-            CFrameQ   = CFrame.new(5668.137, 28.203, -6484.601)
-            CFrameMon = CFrame.new(5628.482, 57.575, -6618.348)
-        elseif lvl <= 1449 then
-            Ms, NameQuest, QuestLv, NameMon = "Sea Soldier","ForgottenQuest",1,"Sea Soldier"
-            CFrameQ   = CFrame.new(-3054.583, 236.872, -10147.790)
-            CFrameMon = CFrame.new(-3185.015, 58.789, -9663.606)
-        else
-            Ms, NameQuest, QuestLv, NameMon = "Water Fighter","ForgottenQuest",2,"Water Fighter"
-            CFrameQ   = CFrame.new(-3054.583, 236.872, -10147.790)
-            CFrameMon = CFrame.new(-3262.930, 298.690, -10552.529)
+        if lvl <= 724 then Ms, NameQuest, QuestLv, NameMon = "Raider","Area1Quest",1,"Raider"
+            CFrameQ = CFrame.new(-427.726, 72.996, 1835.943) CFrameMon = CFrame.new(68.875, 93.636, 2429.675)
+        elseif lvl <= 774 then Ms, NameQuest, QuestLv, NameMon = "Mercenary","Area1Quest",2,"Mercenary"
+            CFrameQ = CFrame.new(-427.726, 72.996, 1835.943) CFrameMon = CFrame.new(-864.850, 122.471, 1453.151)
+        elseif lvl <= 799 then Ms, NameQuest, QuestLv, NameMon = "Swan Pirate","Area2Quest",1,"Swan Pirate"
+            CFrameQ = CFrame.new(635.612, 73.096, 917.813) CFrameMon = CFrame.new(1065.367, 137.640, 1324.380)
+        elseif lvl <= 874 then Ms, NameQuest, QuestLv, NameMon = "Factory Staff","Area2Quest",2,"Factory Staff"
+            CFrameQ = CFrame.new(635.612, 73.096, 917.813) CFrameMon = CFrame.new(533.220, 128.469, 355.626)
+        elseif lvl <= 899 then Ms, NameQuest, QuestLv, NameMon = "Marine Lieutenant","MarineQuest3",1,"Marine Lieutenant"
+            CFrameQ = CFrame.new(-2440.993, 73.042, -3217.708) CFrameMon = CFrame.new(-2489.262, 84.614, -3151.883)
+        elseif lvl <= 949 then Ms, NameQuest, QuestLv, NameMon = "Marine Captain","MarineQuest3",2,"Marine Captain"
+            CFrameQ = CFrame.new(-2440.993, 73.042, -3217.708) CFrameMon = CFrame.new(-2335.203, 79.787, -3245.867)
+        elseif lvl <= 974 then Ms, NameQuest, QuestLv, NameMon = "Zombie","ZombieQuest",1,"Zombie"
+            CFrameQ = CFrame.new(-5494.341, 48.506, -794.591) CFrameMon = CFrame.new(-5536.497, 101.086, -835.591)
+        elseif lvl <= 999 then Ms, NameQuest, QuestLv, NameMon = "Vampire","ZombieQuest",2,"Vampire"
+            CFrameQ = CFrame.new(-5494.341, 48.506, -794.591) CFrameMon = CFrame.new(-5806.110, 16.723, -1164.438)
+        elseif lvl <= 1049 then Ms, NameQuest, QuestLv, NameMon = "Snow Trooper","SnowMountainQuest",1,"Snow Trooper"
+            CFrameQ = CFrame.new(607.060, 401.448, -5370.555) CFrameMon = CFrame.new(535.211, 432.742, -5484.917)
+        elseif lvl <= 1099 then Ms, NameQuest, QuestLv, NameMon = "Winter Warrior","SnowMountainQuest",2,"Winter Warrior"
+            CFrameQ = CFrame.new(607.060, 401.448, -5370.555) CFrameMon = CFrame.new(1234.445, 456.954, -5174.131)
+        elseif lvl <= 1124 then Ms, NameQuest, QuestLv, NameMon = "Lab Subordinate","IceSideQuest",1,"Lab Subordinate"
+            CFrameQ = CFrame.new(-6061.842, 15.927, -4902.039) CFrameMon = CFrame.new(-5720.558, 63.309, -4784.610)
+        elseif lvl <= 1174 then Ms, NameQuest, QuestLv, NameMon = "Horned Warrior","IceSideQuest",2,"Horned Warrior"
+            CFrameQ = CFrame.new(-6061.842, 15.927, -4902.039) CFrameMon = CFrame.new(-6292.752, 91.182, -5502.650)
+        elseif lvl <= 1199 then Ms, NameQuest, QuestLv, NameMon = "Magma Ninja","FireSideQuest",1,"Magma Ninja"
+            CFrameQ = CFrame.new(-5429.047, 15.978, -5297.961) CFrameMon = CFrame.new(-5461.839, 130.363, -5836.470)
+        elseif lvl <= 1249 then Ms, NameQuest, QuestLv, NameMon = "Lava Pirate","FireSideQuest",2,"Lava Pirate"
+            CFrameQ = CFrame.new(-5429.047, 15.978, -5297.961) CFrameMon = CFrame.new(-5251.189, 55.165, -4774.410)
+        elseif lvl <= 1274 then Ms, NameQuest, QuestLv, NameMon = "Ship Deckhand","ShipQuest1",1,"Ship Deckhand"
+            CFrameQ = CFrame.new(1040.293, 125.083, 32911.039) CFrameMon = CFrame.new(921.124, 125.984, 33088.328)
+        elseif lvl <= 1299 then Ms, NameQuest, QuestLv, NameMon = "Ship Engineer","ShipQuest1",2,"Ship Engineer"
+            CFrameQ = CFrame.new(1040.293, 125.083, 32911.039) CFrameMon = CFrame.new(886.282, 40.478, 32800.832)
+        elseif lvl <= 1324 then Ms, NameQuest, QuestLv, NameMon = "Ship Steward","ShipQuest2",1,"Ship Steward"
+            CFrameQ = CFrame.new(971.421, 125.083, 33245.543) CFrameMon = CFrame.new(943.855, 129.582, 33444.367)
+        elseif lvl <= 1349 then Ms, NameQuest, QuestLv, NameMon = "Ship Officer","ShipQuest2",2,"Ship Officer"
+            CFrameQ = CFrame.new(971.421, 125.083, 33245.543) CFrameMon = CFrame.new(955.385, 181.083, 33331.891)
+        elseif lvl <= 1374 then Ms, NameQuest, QuestLv, NameMon = "Arctic Warrior","FrostQuest",1,"Arctic Warrior"
+            CFrameQ = CFrame.new(5668.137, 28.203, -6484.601) CFrameMon = CFrame.new(5935.454, 77.260, -6472.757)
+        elseif lvl <= 1424 then Ms, NameQuest, QuestLv, NameMon = "Snow Lurker","FrostQuest",2,"Snow Lurker"
+            CFrameQ = CFrame.new(5668.137, 28.203, -6484.601) CFrameMon = CFrame.new(5628.482, 57.575, -6618.348)
+        elseif lvl <= 1449 then Ms, NameQuest, QuestLv, NameMon = "Sea Soldier","ForgottenQuest",1,"Sea Soldier"
+            CFrameQ = CFrame.new(-3054.583, 236.872, -10147.790) CFrameMon = CFrame.new(-3185.015, 58.789, -9663.606)
+        else Ms, NameQuest, QuestLv, NameMon = "Water Fighter","ForgottenQuest",2,"Water Fighter"
+            CFrameQ = CFrame.new(-3054.583, 236.872, -10147.790) CFrameMon = CFrame.new(-3262.930, 298.690, -10552.529)
         end
     elseif Sea3 then
-        if lvl <= 1524 then
-            Ms, NameQuest, QuestLv, NameMon = "Pirate Millionaire","PiratePortQuest",1,"Pirate Millionaire"
-            CFrameQ   = CFrame.new(-450.105, 107.681, 5950.726)
-            CFrameMon = CFrame.new(-193.992, 56.125, 5755.788)
-        elseif lvl <= 1574 then
-            Ms, NameQuest, QuestLv, NameMon = "Pistol Billionaire","PiratePortQuest",2,"Pistol Billionaire"
-            CFrameQ   = CFrame.new(-450.105, 107.681, 5950.726)
-            CFrameMon = CFrame.new(-188.145, 84.496, 6337.042)
-        elseif lvl <= 1599 then
-            Ms, NameQuest, QuestLv, NameMon = "Dragon Crew Warrior","DragonCrewQuest",1,"Dragon Crew Warrior"
-            CFrameQ   = CFrame.new(6735.111, 126.990, -711.098)
-            CFrameMon = CFrame.new(6615.233, 50.848, -978.934)
-        elseif lvl <= 1624 then
-            Ms, NameQuest, QuestLv, NameMon = "Dragon Crew Archer","DragonCrewQuest",2,"Dragon Crew Archer"
-            CFrameQ   = CFrame.new(6735.111, 126.990, -711.098)
-            CFrameMon = CFrame.new(6818.589, 483.719, 512.727)
-        elseif lvl <= 1649 then
-            Ms, NameQuest, QuestLv, NameMon = "Hydra Enforcer","VenomCrewQuest",1,"Hydra Enforcer"
-            CFrameQ   = CFrame.new(5446.879, 601.629, 749.457)
-            CFrameMon = CFrame.new(4547.115, 1001.602, 334.195)
-        elseif lvl <= 1699 then
-            Ms, NameQuest, QuestLv, NameMon = "Venomous Assailant","VenomCrewQuest",2,"Venomous Assailant"
-            CFrameQ   = CFrame.new(5446.879, 601.629, 749.457)
-            CFrameMon = CFrame.new(4637.885, 1077.856, 882.418)
-        elseif lvl <= 1724 then
-            Ms, NameQuest, QuestLv, NameMon = "Marine Commodore","MarineTreeIsland",1,"Marine Commodore"
-            CFrameQ   = CFrame.new(2179.988, 28.731, -6740.055)
-            CFrameMon = CFrame.new(2198.006, 128.711, -7109.504)
-        elseif lvl <= 1774 then
-            Ms, NameQuest, QuestLv, NameMon = "Marine Rear Admiral","MarineTreeIsland",2,"Marine Rear Admiral"
-            CFrameQ   = CFrame.new(2179.988, 28.731, -6740.055)
-            CFrameMon = CFrame.new(3294.314, 385.411, -7048.634)
-        elseif lvl <= 1799 then
-            Ms, NameQuest, QuestLv, NameMon = "Fishman Raider","DeepForestIsland3",1,"Fishman Raider"
-            CFrameQ   = CFrame.new(-10582.760, 331.788, -8757.666)
-            CFrameMon = CFrame.new(-10553.269, 521.384, -8176.946)
-        elseif lvl <= 1824 then
-            Ms, NameQuest, QuestLv, NameMon = "Fishman Captain","DeepForestIsland3",2,"Fishman Captain"
-            CFrameQ   = CFrame.new(-10583.100, 331.788, -8759.464)
-            CFrameMon = CFrame.new(-10789.401, 427.186, -9131.442)
-        elseif lvl <= 1849 then
-            Ms, NameQuest, QuestLv, NameMon = "Forest Pirate","DeepForestIsland",1,"Forest Pirate"
-            CFrameQ   = CFrame.new(-13232.662, 332.404, -7626.482)
-            CFrameMon = CFrame.new(-13489.397, 400.303, -7770.252)
-        elseif lvl <= 1899 then
-            Ms, NameQuest, QuestLv, NameMon = "Mythological Pirate","DeepForestIsland",2,"Mythological Pirate"
-            CFrameQ   = CFrame.new(-13232.662, 332.404, -7626.482)
-            CFrameMon = CFrame.new(-13508.616, 582.462, -6985.304)
-        elseif lvl <= 1924 then
-            Ms, NameQuest, QuestLv, NameMon = "Jungle Pirate","DeepForestIsland2",1,"Jungle Pirate"
-            CFrameQ   = CFrame.new(-12682.097, 390.887, -9902.124)
-            CFrameMon = CFrame.new(-12267.104, 459.753, -10277.200)
-        elseif lvl <= 1974 then
-            Ms, NameQuest, QuestLv, NameMon = "Musketeer Pirate","DeepForestIsland2",2,"Musketeer Pirate"
-            CFrameQ   = CFrame.new(-12682.097, 390.887, -9902.124)
-            CFrameMon = CFrame.new(-13291.508, 520.473, -9904.639)
-        else
-            Ms, NameQuest, QuestLv, NameMon = "Reborn Skeleton","HauntedQuest1",1,"Reborn Skeleton"
-            CFrameQ   = CFrame.new(-9480.808, 142.131, 5566.373)
-            CFrameMon = CFrame.new(-8761.771, 183.432, 6168.333)
+        if lvl <= 1524 then Ms, NameQuest, QuestLv, NameMon = "Pirate Millionaire","PiratePortQuest",1,"Pirate Millionaire"
+            CFrameQ = CFrame.new(-450.105, 107.681, 5950.726) CFrameMon = CFrame.new(-193.992, 56.125, 5755.788)
+        elseif lvl <= 1574 then Ms, NameQuest, QuestLv, NameMon = "Pistol Billionaire","PiratePortQuest",2,"Pistol Billionaire"
+            CFrameQ = CFrame.new(-450.105, 107.681, 5950.726) CFrameMon = CFrame.new(-188.145, 84.496, 6337.042)
+        elseif lvl <= 1599 then Ms, NameQuest, QuestLv, NameMon = "Dragon Crew Warrior","DragonCrewQuest",1,"Dragon Crew Warrior"
+            CFrameQ = CFrame.new(6735.111, 126.990, -711.098) CFrameMon = CFrame.new(6615.233, 50.848, -978.934)
+        elseif lvl <= 1624 then Ms, NameQuest, QuestLv, NameMon = "Dragon Crew Archer","DragonCrewQuest",2,"Dragon Crew Archer"
+            CFrameQ = CFrame.new(6735.111, 126.990, -711.098) CFrameMon = CFrame.new(6818.589, 483.719, 512.727)
+        elseif lvl <= 1649 then Ms, NameQuest, QuestLv, NameMon = "Hydra Enforcer","VenomCrewQuest",1,"Hydra Enforcer"
+            CFrameQ = CFrame.new(5446.879, 601.629, 749.457) CFrameMon = CFrame.new(4547.115, 1001.602, 334.195)
+        elseif lvl <= 1699 then Ms, NameQuest, QuestLv, NameMon = "Venomous Assailant","VenomCrewQuest",2,"Venomous Assailant"
+            CFrameQ = CFrame.new(5446.879, 601.629, 749.457) CFrameMon = CFrame.new(4637.885, 1077.856, 882.418)
+        elseif lvl <= 1724 then Ms, NameQuest, QuestLv, NameMon = "Marine Commodore","MarineTreeIsland",1,"Marine Commodore"
+            CFrameQ = CFrame.new(2179.988, 28.731, -6740.055) CFrameMon = CFrame.new(2198.006, 128.711, -7109.504)
+        elseif lvl <= 1774 then Ms, NameQuest, QuestLv, NameMon = "Marine Rear Admiral","MarineTreeIsland",2,"Marine Rear Admiral"
+            CFrameQ = CFrame.new(2179.988, 28.731, -6740.055) CFrameMon = CFrame.new(3294.314, 385.411, -7048.634)
+        elseif lvl <= 1799 then Ms, NameQuest, QuestLv, NameMon = "Fishman Raider","DeepForestIsland3",1,"Fishman Raider"
+            CFrameQ = CFrame.new(-10582.760, 331.788, -8757.666) CFrameMon = CFrame.new(-10553.269, 521.384, -8176.946)
+        elseif lvl <= 1824 then Ms, NameQuest, QuestLv, NameMon = "Fishman Captain","DeepForestIsland3",2,"Fishman Captain"
+            CFrameQ = CFrame.new(-10583.100, 331.788, -8759.464) CFrameMon = CFrame.new(-10789.401, 427.186, -9131.442)
+        elseif lvl <= 1849 then Ms, NameQuest, QuestLv, NameMon = "Forest Pirate","DeepForestIsland",1,"Forest Pirate"
+            CFrameQ = CFrame.new(-13232.662, 332.404, -7626.482) CFrameMon = CFrame.new(-13489.397, 400.303, -7770.252)
+        elseif lvl <= 1899 then Ms, NameQuest, QuestLv, NameMon = "Mythological Pirate","DeepForestIsland",2,"Mythological Pirate"
+            CFrameQ = CFrame.new(-13232.662, 332.404, -7626.482) CFrameMon = CFrame.new(-13508.616, 582.462, -6985.304)
+        elseif lvl <= 1924 then Ms, NameQuest, QuestLv, NameMon = "Jungle Pirate","DeepForestIsland2",1,"Jungle Pirate"
+            CFrameQ = CFrame.new(-12682.097, 390.887, -9902.124) CFrameMon = CFrame.new(-12267.104, 459.753, -10277.200)
+        elseif lvl <= 1974 then Ms, NameQuest, QuestLv, NameMon = "Musketeer Pirate","DeepForestIsland2",2,"Musketeer Pirate"
+            CFrameQ = CFrame.new(-12682.097, 390.887, -9902.124) CFrameMon = CFrame.new(-13291.508, 520.473, -9904.639)
+        elseif lvl <= 1999 then Ms, NameQuest, QuestLv, NameMon = "Reborn Skeleton","HauntedQuest1",1,"Reborn Skeleton"
+            CFrameQ = CFrame.new(-9480.808, 142.131, 5566.373) CFrameMon = CFrame.new(-8761.771, 183.432, 6168.333)
+        elseif lvl <= 2024 then Ms, NameQuest, QuestLv, NameMon = "Living Zombie","HauntedQuest1",2,"Living Zombie"
+            CFrameQ = CFrame.new(-9480.808, 142.131, 5566.373) CFrameMon = CFrame.new(-10103.753, 238.566, 6179.760)
+        elseif lvl <= 2049 then Ms, NameQuest, QuestLv, NameMon = "Demonic Soul","HauntedQuest2",1,"Demonic Soul"
+            CFrameQ = CFrame.new(-9516.993, 178.007, 6078.465) CFrameMon = CFrame.new(-9712.031, 204.696, 6193.322)
+        elseif lvl <= 2074 then Ms, NameQuest, QuestLv, NameMon = "Posessed Mummy","HauntedQuest2",2,"Posessed Mummy"
+            CFrameQ = CFrame.new(-9516.993, 178.007, 6078.465) CFrameMon = CFrame.new(-9545.776, 69.620, 6339.562)
+        elseif lvl <= 2099 then Ms, NameQuest, QuestLv, NameMon = "Peanut Scout","NutsIslandQuest",1,"Peanut Scout"
+            CFrameQ = CFrame.new(-2105.532, 37.250, -10195.509) CFrameMon = CFrame.new(-2150.588, 122.498, -10358.994)
+        elseif lvl <= 2124 then Ms, NameQuest, QuestLv, NameMon = "Peanut President","NutsIslandQuest",2,"Peanut President"
+            CFrameQ = CFrame.new(-2105.532, 37.250, -10195.509) CFrameMon = CFrame.new(-2150.588, 122.498, -10358.994)
+        elseif lvl <= 2149 then Ms, NameQuest, QuestLv, NameMon = "Ice Cream Chef","IceCreamIslandQuest",1,"Ice Cream Chef"
+            CFrameQ = CFrame.new(-819.377, 64.926, -10967.283) CFrameMon = CFrame.new(-789.942, 209.383, -11009.981)
+        elseif lvl <= 2199 then Ms, NameQuest, QuestLv, NameMon = "Ice Cream Commander","IceCreamIslandQuest",2,"Ice Cream Commander"
+            CFrameQ = CFrame.new(-819.377, 64.926, -10967.283) CFrameMon = CFrame.new(-789.942, 209.383, -11009.981)
+        else Ms, NameQuest, QuestLv, NameMon = "Cake Guard","CakeQuest1",2,"Cake Guard"
+            CFrameQ = CFrame.new(-2022.299, 36.928, -12030.977) CFrameMon = CFrame.new(-1418.110, 36.672, -12255.732)
         end
     end
 end
 
 -- ============================================================
--- TABS + WRAPPER
+-- TAB MAIN: CÀY CẤP
 -- ============================================================
-local function makeProxy(obj, holder)
-    local proxy = {}
-    setmetatable(proxy, {
-        __index = function(_, k)
-            if k == "OnChanged" then
-                return function(_, fn) holder.extra = fn return proxy end
-            end
-            if k == "SetValue" then
-                return function(_, v) if obj.SetValue then pcall(obj.SetValue, v) end end
-            end
-            if k == "SetDesc" or k == "SetText" then
-                return function(_, t) if obj.SetText then pcall(obj.SetText, obj, t) end end
-            end
-            local v = rawget(obj, k) or (type(obj) == "table" and obj[k])
-            if type(v) == "function" then
-                return function(_, ...) return pcall(v, obj, ...) end
-            end
-            return v
-        end
-    })
-    return proxy
-end
+local TabMain = Window:CreateTab("Cày Cấp", 4483362458)
+TabMain:CreateSection("Cày Cấp Tự Động")
 
-local function wrapTab(rawTab)
-    local sec, nextRight = nil, false
-    local function ensure()
-        if not sec then sec = rawTab:AddLeftGroupbox(" ") end
-    end
-    local w = {}
-    function w:AddSection(name)
-        if nextRight then sec = rawTab:AddRightGroupbox(name or " ")
-        else sec = rawTab:AddLeftGroupbox(name or " ") end
-        nextRight = not nextRight
-        return sec
-    end
-    function w:AddToggle(id, s)
-        ensure()
-        local h = {}
-        local cb = s.Callback
-        s.Callback = function(v) if cb then pcall(cb, v) end; if h.extra then pcall(h.extra, v) end end
-        s.Description = nil
-        return makeProxy(sec:AddToggle(id, s), h)
-    end
-    function w:AddButton(s, cb)
-        ensure()
-        if type(s) == "table" then s.Description = nil end
-        return makeProxy(sec:AddButton(s, cb), {})
-    end
-    function w:AddDropdown(id, s)
-        ensure()
-        local h = {}
-        local cb = s.Callback
-        s.Callback = function(v) if cb then pcall(cb, v) end; if h.extra then pcall(h.extra, v) end end
-        s.Description = nil
-        return makeProxy(sec:AddDropdown(id, s), h)
-    end
-    function w:AddSlider(id, s)
-        ensure()
-        local h = {}
-        local cb = s.Callback
-        s.Callback = function(v) if cb then pcall(cb, v) end; if h.extra then pcall(h.extra, v) end end
-        return makeProxy(sec:AddSlider(s), h)
-    end
-    function w:AddInput(id, s)
-        ensure()
-        local h = {}
-        local cb = s.Callback
-        s.Callback = function(v) if cb then pcall(cb, v) end; if h.extra then pcall(h.extra, v) end end
-        return makeProxy(sec:AddInput(id, s), h)
-    end
-    function w:AddParagraph(s)
-        ensure()
-        return makeProxy(sec:AddLabel((s.Title or "") .. "\n" .. (s.Description or "")), {})
-    end
-    return w
-end
-
-local Tabs = {
-    Info     = wrapTab(Window:AddTab("Thông Tin")),
-    Main     = wrapTab(Window:AddTab("Cày Cấp")),
-    Sea      = wrapTab(Window:AddTab("Sự Kiện")),
-    Item     = wrapTab(Window:AddTab("Vật Phẩm")),
-    Setting  = wrapTab(Window:AddTab("Cài Đặt")),
-    Status   = wrapTab(Window:AddTab("Trạng Thái")),
-    Stats    = wrapTab(Window:AddTab("Chỉ Số")),
-    Player   = wrapTab(Window:AddTab("Người Chơi")),
-    Teleport = wrapTab(Window:AddTab("Dịch Chuyển")),
-    Fruit    = wrapTab(Window:AddTab("Trái Ác Quỷ")),
-    Raid     = wrapTab(Window:AddTab("Đột Kích")),
-    Misc     = wrapTab(Window:AddTab("Khác")),
-}
-
--- ============================================================
--- ANTI AFK
--- ============================================================
-Player.Idled:Connect(function()
-    VirtualUser:Button2Down(Vector2.new(0, 0), Workspace.CurrentCamera.CFrame)
-    wait()
-    VirtualUser:Button2Up(Vector2.new(0, 0), Workspace.CurrentCamera.CFrame)
-end)
-
--- ============================================================
--- MAIN FARM
--- ============================================================
-Tabs.Main:AddSection("Cày Cấp")
-
-Tabs.Main:AddDropdown("DropWeapon", {
-    Title = "Vũ Khí",
-    Values = { "Melee", "Sword", "Gun", "Blox Fruit" },
-    Default = 1,
-    Callback = function(v) SelectWeapon = v end
+TabMain:CreateDropdown("SelectWeaponDrop", {
+    Name = "Vũ Khí", Options = { "Melee", "Sword", "Gun", "Blox Fruit" },
+    CurrentOption = "Melee", MultipleOptions = false, Flag = "WeaponType",
+    Callback = function(Option) SelectWeapon = Option end
 })
 
-Tabs.Main:AddToggle("ToggleLevel", {
-    Title = "Cày Cấp", Default = false,
-    Callback = function(v) _G.AutoLevel = v end
+TabMain:CreateToggle("ToggleLevel", {
+    Name = "Cày Cấp", CurrentValue = false, Flag = "AutoLevel",
+    Callback = function(Value) _G.AutoLevel = Value end
+})
+
+TabMain:CreateToggle("ToggleMobAura", {
+    Name = "Đánh Quái Gần", CurrentValue = false, Flag = "AutoNear",
+    Callback = function(Value) _G.AutoNear = Value end
+})
+
+TabMain:CreateToggle("ToggleBring", {
+    Name = "Gom Quái", CurrentValue = true, Flag = "BringMob",
+    Callback = function(Value) _G.BringMob = Value end
+})
+
+TabMain:CreateToggle("ToggleOneHit", {
+    Name = "Đánh Nhanh (Clamp 25% HP)", CurrentValue = false, Flag = "OneHitKill",
+    Callback = function(Value) _G.OneHitKill = Value end
 })
 
 _G.Fast_Delay = 1e-9
@@ -696,11 +403,6 @@ task.spawn(function()
     end
 end)
 
-Tabs.Main:AddToggle("ToggleNear", {
-    Title = "Đánh Quái Gần", Default = false,
-    Callback = function(v) _G.AutoNear = v end
-})
-
 task.spawn(function()
     while wait() do
         if _G.AutoNear then
@@ -730,12 +432,6 @@ task.spawn(function()
     end
 end)
 
-Tabs.Main:AddToggle("ToggleBring", {
-    Title = "Gom Quái", Default = true,
-    Callback = function(v) _G.BringMob = v end
-})
-_G.BringMob = true
-
 task.spawn(function()
     while wait() do
         pcall(function()
@@ -756,11 +452,6 @@ task.spawn(function()
         end)
     end
 end)
-
-Tabs.Main:AddToggle("ToggleOneHit", {
-    Title = "Đánh Nhanh (Clamp 25% HP)", Default = false,
-    Callback = function(v) _G.OneHitKill = v end
-})
 
 spawn(function()
     while wait(0.1) do
@@ -783,58 +474,73 @@ spawn(function()
 end)
 
 -- ============================================================
--- TELEPORT
+-- TAB TELEPORT
 -- ============================================================
+local TabTele = Window:CreateTab("Dịch Chuyển", 4483362458)
+TabTele:CreateSection("Bay Đến Đảo")
+
 local Islands = {}
 if Sea1 then
     Islands = {
-        ["WindMill"]    = CFrame.new(979.799, 16.516, 1429.047),
-        ["Marine"]      = CFrame.new(-2566.43, 6.856, 2045.256),
-        ["Jungle"]      = CFrame.new(-1612.796, 36.852, 149.128),
-        ["Desert"]      = CFrame.new(944.158, 20.92, 4373.3),
+        ["WindMill"] = CFrame.new(979.799, 16.516, 1429.047),
+        ["Marine"] = CFrame.new(-2566.43, 6.856, 2045.256),
+        ["Middle Town"] = CFrame.new(-690.331, 15.094, 1582.238),
+        ["Jungle"] = CFrame.new(-1612.796, 36.852, 149.128),
+        ["Pirate Village"] = CFrame.new(-1181.309, 4.751, 3803.546),
+        ["Desert"] = CFrame.new(944.158, 20.92, 4373.3),
         ["Snow Island"] = CFrame.new(1347.807, 104.668, -1319.737),
-        ["MarineFord"]  = CFrame.new(-4914.821, 50.964, 4281.028),
+        ["MarineFord"] = CFrame.new(-4914.821, 50.964, 4281.028),
+        ["Magma Village"] = CFrame.new(-5247.716, 12.884, 8504.969),
         ["Fountain City"] = CFrame.new(5127.128, 59.501, 4105.446),
-        ["Prison"]      = CFrame.new(4875.33, 5.652, 734.85),
+        ["Prison"] = CFrame.new(4875.33, 5.652, 734.85),
+        ["Colosseum"] = CFrame.new(-11.311, 29.277, 2771.522),
+        ["Under Water Island"] = CFrame.new(-2850.201, 7.392, 5354.993),
+        ["Shank Room"] = CFrame.new(-1442.166, 29.879, -28.355),
+        ["Mob Island"] = CFrame.new(-2850.201, 7.392, 5354.993),
     }
 elseif Sea2 then
     Islands = {
-        ["The Cafe"]    = CFrame.new(-380.479, 77.22, 255.826),
-        ["Frist Spot"]  = CFrame.new(-11.311, 29.277, 2771.522),
-        ["Dark Area"]   = CFrame.new(3780.03, 22.652, -3498.586),
-        ["Factory"]     = CFrame.new(424.127, 211.162, -427.54),
-        ["Colossuim"]   = CFrame.new(-1503.622, 219.796, 1369.31),
+        ["The Cafe"] = CFrame.new(-380.479, 77.22, 255.826),
+        ["Frist Spot"] = CFrame.new(-11.311, 29.277, 2771.522),
+        ["Dark Area"] = CFrame.new(3780.03, 22.652, -3498.586),
+        ["Factory"] = CFrame.new(424.127, 211.162, -427.54),
+        ["Colossuim"] = CFrame.new(-1503.622, 219.796, 1369.31),
         ["Zombie Island"] = CFrame.new(753.143, 408.236, -5274.615),
+        ["Two Snow Mountain"] = CFrame.new(753.143, 408.236, -5274.615),
         ["Punk Hazard"] = CFrame.new(-6127.654, 15.952, -5040.286),
+        ["Cursed Ship"] = CFrame.new(923.401, 125.057, 32885.875),
         ["Forgotten Island"] = CFrame.new(-3032.764, 317.897, -10075.373),
     }
 elseif Sea3 then
     Islands = {
-        ["Mansion"]     = CFrame.new(-12471.17, 374.94, -7551.678),
-        ["Port Town"]   = CFrame.new(-290.737, 6.730, 5343.554),
-        ["Great Tree"]  = CFrame.new(2681.274, 1682.809, -7190.985),
+        ["Mansion"] = CFrame.new(-12471.17, 374.94, -7551.678),
+        ["Port Town"] = CFrame.new(-290.737, 6.730, 5343.554),
+        ["Great Tree"] = CFrame.new(2681.274, 1682.809, -7190.985),
         ["Hydra Island"] = CFrame.new(5291.249, 1005.443, 393.762),
         ["Floating Turtle"] = CFrame.new(-13274.528, 531.821, -7579.223),
         ["Haunted Castle"] = CFrame.new(-9515.372, 164.006, 5786.061),
         ["Ice Cream Island"] = CFrame.new(-902.568, 79.932, -10988.848),
+        ["Peanut Island"] = CFrame.new(-2062.748, 50.474, -10232.568),
         ["Cake Island"] = CFrame.new(-1884.775, 19.328, -11666.897),
+        ["Cocoa Island"] = CFrame.new(87.943, 73.555, -12319.465),
+        ["Candy Island"] = CFrame.new(-1014.424, 149.111, -14555.963),
         ["Tiki Outpost"] = CFrame.new(-16218.683, 9.086, 445.618),
     }
 end
 
-Tabs.Teleport:AddSection("Đảo")
-local list = {}
-for k in pairs(Islands) do table.insert(list, k) end
-table.sort(list)
+local islandList = {}
+for k in pairs(Islands) do table.insert(islandList, k) end
+table.sort(islandList)
 
-Tabs.Teleport:AddDropdown("DropIsland", {
-    Title = "Chọn Đảo", Values = list, Default = 1,
-    Callback = function(v) _G.SelectIsland = v end
+TabTele:CreateDropdown("DropIsland", {
+    Name = "Chọn Đảo", Options = islandList, CurrentOption = islandList[1],
+    MultipleOptions = false, Flag = "SelectedIsland",
+    Callback = function(Option) _G.SelectIsland = Option end
 })
 
-Tabs.Teleport:AddToggle("ToggleAutoIsland", {
-    Title = "Bay Đến Đảo", Default = false,
-    Callback = function(v) _G.TeleportIsland = v end
+TabTele:CreateToggle("ToggleAutoIsland", {
+    Name = "Bay Đến Đảo", CurrentValue = false, Flag = "AutoIsland",
+    Callback = function(Value) _G.TeleportIsland = Value end
 })
 
 task.spawn(function()
@@ -845,33 +551,31 @@ task.spawn(function()
     end
 end)
 
-Tabs.Teleport:AddSection("Biển")
-Tabs.Teleport:AddButton({ Title = "Biển 1", Callback = function()
-    ReplicatedStorage.Remotes.CommF_:InvokeServer("TravelMain")
-end})
-Tabs.Teleport:AddButton({ Title = "Biển 2", Callback = function()
-    ReplicatedStorage.Remotes.CommF_:InvokeServer("TravelDressrosa")
-end})
-Tabs.Teleport:AddButton({ Title = "Biển 3", Callback = function()
-    ReplicatedStorage.Remotes.CommF_:InvokeServer("TravelZou")
-end})
+TabTele:CreateSection("Biển")
+TabTele:CreateButton("BtnSea1", { Name = "Biển 1",
+    Callback = function() ReplicatedStorage.Remotes.CommF_:InvokeServer("TravelMain") end })
+TabTele:CreateButton("BtnSea2", { Name = "Biển 2",
+    Callback = function() ReplicatedStorage.Remotes.CommF_:InvokeServer("TravelDressrosa") end })
+TabTele:CreateButton("BtnSea3", { Name = "Biển 3",
+    Callback = function() ReplicatedStorage.Remotes.CommF_:InvokeServer("TravelZou") end })
 
 -- ============================================================
--- STATS
+-- TAB STATS
 -- ============================================================
-Tabs.Stats:AddSection("Tự Động Nâng Điểm")
+local TabStats = Window:CreateTab("Chỉ Số", 4483362458)
+TabStats:CreateSection("Tự Động Nâng Điểm")
+
 local sFlags = { Melee=false, Defense=false, Sword=false, Gun=false, Fruit=false }
+TabStats:CreateToggle("SPMelee", { Name="Melee", CurrentValue=false, Callback=function(v) sFlags.Melee=v end })
+TabStats:CreateToggle("SPDefense", { Name="Defense", CurrentValue=false, Callback=function(v) sFlags.Defense=v end })
+TabStats:CreateToggle("SPSword", { Name="Sword", CurrentValue=false, Callback=function(v) sFlags.Sword=v end })
+TabStats:CreateToggle("SPGun", { Name="Gun", CurrentValue=false, Callback=function(v) sFlags.Gun=v end })
+TabStats:CreateToggle("SPFruit", { Name="Devil Fruit", CurrentValue=false, Callback=function(v) sFlags.Fruit=v end })
 
-Tabs.Stats:AddToggle("SPMelee", { Title="Melee", Default=false, Callback=function(v) sFlags.Melee=v end })
-Tabs.Stats:AddToggle("SPDef",   { Title="Defense", Default=false, Callback=function(v) sFlags.Defense=v end })
-Tabs.Stats:AddToggle("SPSword", { Title="Sword", Default=false, Callback=function(v) sFlags.Sword=v end })
-Tabs.Stats:AddToggle("SPGun",   { Title="Gun", Default=false, Callback=function(v) sFlags.Gun=v end })
-Tabs.Stats:AddToggle("SPFruit", { Title="Devil Fruit", Default=false, Callback=function(v) sFlags.Fruit=v end })
-
-local pPerTick = 1
-Tabs.Stats:AddSlider("SliderPts", {
-    Title="Điểm mỗi tick", Default=1, Min=1, Max=100, Rounding=0,
-    Callback=function(v) pPerTick=v end
+local ptsPerTick = 1
+TabStats:CreateSlider("SliderPts", {
+    Name = "Điểm mỗi tick", Range = { 1, 100 }, Increment = 1,
+    Suffix = "", CurrentValue = 1, Callback = function(v) ptsPerTick = v end
 })
 
 task.spawn(function()
@@ -886,7 +590,7 @@ task.spawn(function()
             if sFlags.Gun then table.insert(active, "Gun") end
             if sFlags.Fruit then table.insert(active, "Demon Fruit") end
             if #active == 0 then return end
-            local per = math.max(1, math.floor(pPerTick / #active))
+            local per = math.max(1, math.floor(ptsPerTick / #active))
             for _, st in ipairs(active) do
                 ReplicatedStorage.Remotes.CommF_:InvokeServer("AddPoint", st, per)
             end
@@ -895,154 +599,23 @@ task.spawn(function()
 end)
 
 -- ============================================================
--- PLAYER
--- ============================================================
-Tabs.Player:AddSection("Tiện Ích")
-
-_G.WalkWater = true
-Tabs.Player:AddToggle("WalkWater", {
-    Title="Đi Trên Nước", Default=true,
-    Callback=function(v) _G.WalkWater=v end
-})
-
-task.spawn(function()
-    while task.wait() do
-        pcall(function()
-            local w = Workspace.Map and Workspace.Map:FindFirstChild("WaterBase-Plane")
-            if w then
-                w.Size = _G.WalkWater and Vector3.new(1000,112,1000)
-                          or Vector3.new(1000,80,1000)
-            end
-        end)
-    end
-end)
-
-Tabs.Player:AddToggle("NoClip", {
-    Title="Đi Xuyên Tường", Default=false,
-    Callback=function(v) _G.NoClip=v end
-})
-
-RunService.Stepped:Connect(function()
-    if _G.NoClip and Character then
-        for _, p in pairs(Character:GetDescendants()) do
-            if p:IsA("BasePart") then p.CanCollide = false end
-        end
-    end
-end)
-
-Tabs.Player:AddToggle("FastSpeed", {
-    Title="Chạy Nhanh", Default=false,
-    Callback=function(v) _G.FastSpeed=v end
-})
-
-task.spawn(function()
-    while task.wait() do
-        if Humanoid then
-            Humanoid.WalkSpeed = _G.FastSpeed and 120 or 16
-        end
-    end
-end)
-
--- ============================================================
--- FRUIT
--- ============================================================
-Tabs.Fruit:AddSection("Trái Ác Quỷ")
-
-Tabs.Fruit:AddToggle("RandomFruit", {
-    Title="Random Trái", Default=false,
-    Callback=function(v) _G.RandomFruit=v end
-})
-
-task.spawn(function()
-    while wait() do
-        if _G.RandomFruit then
-            pcall(function() ReplicatedStorage.Remotes.CommF_:InvokeServer("Cousin","Buy") end)
-        end
-    end
-end)
-
-Tabs.Fruit:AddToggle("CollectFruit", {
-    Title="Bay Đến Trái", Default=false,
-    Callback=function(v) _G.CollectFruit=v end
-})
-
-task.spawn(function()
-    while wait() do
-        if _G.CollectFruit then
-            for _, o in pairs(Workspace:GetChildren()) do
-                if o:IsA("Tool") and string.find(o.Name,"Fruit") and o:FindFirstChild("Handle") then
-                    Tween(o.Handle.CFrame)
-                end
-            end
-        end
-    end
-end)
-
--- ESP Player
-ESPPlayer = false
-task.spawn(function()
-    while wait() do
-        if ESPPlayer then
-            pcall(function()
-                for _, p in pairs(Players:GetChildren()) do
-                    if p ~= Player and p.Character and p.Character:FindFirstChild("Head") then
-                        local head = p.Character.Head
-                        if not head:FindFirstChild("NameEsp"..Number) then
-                            local bg = Instance.new("BillboardGui", head)
-                            bg.Name = "NameEsp"..Number
-                            bg.Size = UDim2.new(1,200,1,30)
-                            bg.AlwaysOnTop = true
-                            local t = Instance.new("TextLabel", bg)
-                            t.Size = UDim2.new(1,0,1,0)
-                            t.BackgroundTransparency = 1
-                            t.TextStrokeTransparency = 0.5
-                            t.Font = Enum.Font.GothamSemibold
-                            t.TextSize = 14
-                        end
-                        local bg = head:FindFirstChild("NameEsp"..Number)
-                        if bg then
-                            local d = round((Root.Position - head.Position).Magnitude/3)
-                            local hp = round(p.Character.Humanoid.Health * 100 / p.Character.Humanoid.MaxHealth)
-                            bg.TextLabel.Text = p.Name.." | "..d.." | HP "..hp.."%"
-                            bg.TextLabel.TextColor3 = (p.Team==Player.Team)
-                                and Color3.fromRGB(0,255,0) or Color3.fromRGB(255,0,0)
-                        end
-                    end
-                end
-            end)
-        else
-            for _, p in pairs(Players:GetChildren()) do
-                if p.Character and p.Character:FindFirstChild("Head") then
-                    local e = p.Character.Head:FindFirstChild("NameEsp"..Number)
-                    if e then e:Destroy() end
-                end
-            end
-        end
-    end
-end)
-
-Tabs.Fruit:AddToggle("ESPPlayer", {
-    Title="ESP Người Chơi", Default=false,
-    Callback=function(v) ESPPlayer=v end
-})
-
--- ============================================================
--- RAID
+-- TAB RAID
 -- ============================================================
 if Sea2 or Sea3 then
-    Tabs.Raid:AddSection("Đột Kích")
+    local TabRaid = Window:CreateTab("Đột Kích", 4483362458)
+    TabRaid:CreateSection("Raid Cơ Bản")
 
     local chips = {"Flame","Ice","Quake","Light","Dark","Spider","Rumble","Magma","Buddha","Sand","Phoenix","Dough"}
     _G.SelectChip = "Flame"
 
-    Tabs.Raid:AddDropdown("DropChip", {
-        Title="Chọn Chip", Values=chips, Default=1,
-        Callback=function(v) _G.SelectChip=v end
+    TabRaid:CreateDropdown("DropChip", {
+        Name = "Chọn Chip", Options = chips, CurrentOption = "Flame",
+        MultipleOptions = false, Callback = function(v) _G.SelectChip = v end
     })
 
-    Tabs.Raid:AddToggle("BuyChip", {
-        Title="Mua Chip", Default=false,
-        Callback=function(v) _G.BuyChip=v end
+    TabRaid:CreateToggle("BuyChip", {
+        Name = "Mua Chip", CurrentValue = false,
+        Callback = function(v) _G.BuyChip = v end
     })
 
     task.spawn(function()
@@ -1055,9 +628,9 @@ if Sea2 or Sea3 then
         end
     end)
 
-    Tabs.Raid:AddToggle("StartRaid", {
-        Title="Bắt Đầu Raid", Default=false,
-        Callback=function(v) _G.StartRaid=v end
+    TabRaid:CreateToggle("StartRaid", {
+        Name = "Bắt Đầu Raid", CurrentValue = false,
+        Callback = function(v) _G.StartRaid = v end
     })
 
     task.spawn(function()
@@ -1083,9 +656,9 @@ if Sea2 or Sea3 then
         end
     end)
 
-    Tabs.Raid:AddToggle("Dungeon", {
-        Title="Đánh Quái Raid", Default=false,
-        Callback=function(v) _G.Dungeon=v end
+    TabRaid:CreateToggle("Dungeon", {
+        Name = "Đánh Quái Raid", CurrentValue = false,
+        Callback = function(v) _G.Dungeon = v end
     })
 
     task.spawn(function()
@@ -1116,9 +689,251 @@ if Sea2 or Sea3 then
 end
 
 -- ============================================================
--- MISC
+-- TAB ITEM (Kiếm)
 -- ============================================================
-Tabs.Misc:AddSection("Mã Code")
+local TabItem = Window:CreateTab("Vật Phẩm", 4483362458)
+TabItem:CreateSection("Auto Lấy Kiếm")
+
+TabItem:CreateToggle("AutoSaber", {
+    Name = "Saber", CurrentValue = false,
+    Callback = function(v) _G.Auto_Saber = v end
+})
+
+task.spawn(function()
+    while task.wait() do
+        if _G.Auto_Saber then
+            pcall(function()
+                if Workspace.Enemies:FindFirstChild("Saber Expert") then
+                    for _, mob in pairs(Workspace.Enemies:GetChildren()) do
+                        if mob.Name == "Saber Expert" and mob:FindFirstChild("Humanoid") and mob.Humanoid.Health > 0 then
+                            repeat
+                                task.wait(_G.Fast_Delay)
+                                AttackNoCoolDown()
+                                AutoHaki()
+                                EquipTool(_CURRENT_WEAPON or SelectWeapon)
+                                local cf = mob.HumanoidRootPart.CFrame * CFrame.new(0, 30, 0)
+                                if (cf.Position - Root.Position).Magnitude > 5 then BKP(cf) end
+                            until mob.Humanoid.Health <= 0 or not mob.Parent or not _G.Auto_Saber
+                        end
+                    end
+                else
+                    Tween2(CFrame.new(-1404.91504, 29.9773273, 3.80598116))
+                end
+            end)
+        end
+    end
+end)
+
+TabItem:CreateToggle("AutoPole", {
+    Name = "Pole V1 (Thunder God)", CurrentValue = false,
+    Callback = function(v) _G.AutoPole = v end
+})
+
+task.spawn(function()
+    while task.wait() do
+        if _G.AutoPole then
+            pcall(function()
+                if Workspace.Enemies:FindFirstChild("Thunder God") then
+                    for _, mob in pairs(Workspace.Enemies:GetChildren()) do
+                        if mob.Name == "Thunder God" and mob:FindFirstChild("Humanoid") and mob.Humanoid.Health > 0 then
+                            repeat
+                                task.wait(_G.Fast_Delay)
+                                AttackNoCoolDown()
+                                AutoHaki()
+                                EquipTool(_CURRENT_WEAPON or SelectWeapon)
+                                local cf = mob.HumanoidRootPart.CFrame * CFrame.new(0, 30, 0)
+                                if (cf.Position - Root.Position).Magnitude > 5 then BKP(cf) end
+                            until mob.Humanoid.Health <= 0 or not mob.Parent or not _G.AutoPole
+                        end
+                    end
+                else
+                    Tween2(CFrame.new(-7748.0185546875, 5606.80615234375, -2305.898681640625))
+                end
+            end)
+        end
+    end
+end)
+
+TabItem:CreateToggle("AutoWando", {
+    Name = "Wando (Longma)", CurrentValue = false,
+    Callback = function(v) _G.Auto_Wando = v end
+})
+
+task.spawn(function()
+    while task.wait() do
+        if _G.Auto_Wando then
+            pcall(function()
+                if Workspace.Enemies:FindFirstChild("Longma") then
+                    for _, mob in pairs(Workspace.Enemies:GetChildren()) do
+                        if mob.Name == "Longma" and mob:FindFirstChild("Humanoid") and mob.Humanoid.Health > 0 then
+                            repeat
+                                task.wait(_G.Fast_Delay)
+                                AttackNoCoolDown()
+                                AutoHaki()
+                                EquipTool(_CURRENT_WEAPON or SelectWeapon)
+                                local cf = mob.HumanoidRootPart.CFrame * CFrame.new(0, 30, 0)
+                                if (cf.Position - Root.Position).Magnitude > 5 then BKP(cf) end
+                            until mob.Humanoid.Health <= 0 or not mob.Parent or not _G.Auto_Wando
+                        end
+                    end
+                else
+                    Tween2(CFrame.new(-10238.875976563, 389.7912902832, -9549.7939453125))
+                end
+            end)
+        end
+    end
+end)
+
+-- Yama
+TabItem:CreateToggle("AutoYama", {
+    Name = "Yama", CurrentValue = false,
+    Callback = function(v) _G.AutoYama = v end
+})
+
+task.spawn(function()
+    while wait() do
+        if _G.AutoYama and ReplicatedStorage.Remotes.CommF_:InvokeServer("EliteHunter","Progress") >= 30 then
+            wait()
+            fireclickdetector(Workspace.Map.Waterfall.SealedKatana.Handle.ClickDetector)
+        end
+    end
+end)
+
+-- Tushita
+TabItem:CreateToggle("AutoTushita", {
+    Name = "Tushita", CurrentValue = false,
+    Callback = function(v) _G.AutoTushita = v end
+})
+
+task.spawn(function()
+    while task.wait() do
+        if _G.AutoTushita then
+            pcall(function()
+                if Workspace.Enemies:FindFirstChild("Longma") then
+                    for _, mob in pairs(Workspace.Enemies:GetChildren()) do
+                        if mob.Name == "Longma" and mob:FindFirstChild("Humanoid") and mob.Humanoid.Health > 0 then
+                            repeat
+                                task.wait(_G.Fast_Delay)
+                                AttackNoCoolDown()
+                                AutoHaki()
+                                EquipTool(_CURRENT_WEAPON or SelectWeapon)
+                                local cf = mob.HumanoidRootPart.CFrame * CFrame.new(0, 30, 0)
+                                if (cf.Position - Root.Position).Magnitude > 5 then BKP(cf) end
+                            until mob.Humanoid.Health <= 0 or not mob.Parent or not _G.AutoTushita
+                        end
+                    end
+                else
+                    Tween2(CFrame.new(-10238.875976563, 389.7912902832, -9549.7939453125))
+                end
+            end)
+        end
+    end
+end)
+
+-- Cursed Dual Katana
+TabItem:CreateToggle("AutoCDK", {
+    Name = "Cursed Dual Katana", CurrentValue = false,
+    Callback = function(v) _G.Auto_CDK = v end
+})
+
+task.spawn(function()
+    while task.wait() do
+        if _G.Auto_CDK then
+            pcall(function()
+                local enemies = Workspace:FindFirstChild("Enemies")
+                local boss = enemies and (enemies:FindFirstChild("Cursed Skeleton Boss")
+                            or enemies:FindFirstChild("Cursed Skeleton"))
+                if boss and boss:FindFirstChild("Humanoid") and boss.Humanoid.Health > 0 then
+                    repeat
+                        task.wait(_G.Fast_Delay)
+                        AttackNoCoolDown()
+                        AutoHaki()
+                        EquipTool(_CURRENT_WEAPON or SelectWeapon)
+                        local cf = boss.HumanoidRootPart.CFrame * CFrame.new(0, 30, 0)
+                        if (cf.Position - Root.Position).Magnitude > 5 then BKP(cf) end
+                    until boss.Humanoid.Health <= 0 or not boss.Parent or not _G.Auto_CDK
+                else
+                    Tween2(CFrame.new(-12318.193, 601.951, -6538.662))
+                end
+            end)
+        end
+    end
+end)
+
+-- ============================================================
+-- TAB EVENT (Sea 3)
+-- ============================================================
+if Sea3 then
+    local TabEvent = Window:CreateTab("Sự Kiện", 4483362458)
+    TabEvent:CreateSection("Kitsune")
+
+    TabEvent:CreateToggle("AutoKitsune", {
+        Name = "Bay Đến Đảo Cáo", CurrentValue = false,
+        Callback = function(v) _G.TweenToKitsune = v end
+    })
+
+    task.spawn(function()
+        while task.wait() do
+            if _G.TweenToKitsune then
+                local map = Workspace:FindFirstChild("Map")
+                local k = map and map:FindFirstChild("KitsuneIsland")
+                if k then
+                    local shrine = k:FindFirstChild("ShrineActive")
+                    if shrine then
+                        for _, p in pairs(shrine:GetDescendants()) do
+                            if p:IsA("BasePart") and p.Name:find("NeonShrinePart") then
+                                Tween(p.CFrame)
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end)
+
+    TabEvent:CreateSection("Leviathan")
+    TabEvent:CreateToggle("AutoLev", {
+        Name = "Bay Đến Đảo Leviathan", CurrentValue = false,
+        Callback = function(v) _G.TweenToLev = v end
+    })
+
+    task.spawn(function()
+        while task.wait() do
+            if _G.TweenToLev then
+                local map = Workspace:FindFirstChild("Map")
+                local fd = map and map:FindFirstChild("FrozenDimension")
+                if fd then Tween2(fd.CFrame) end
+            end
+        end
+    end)
+
+    TabEvent:CreateSection("Prehistoric")
+    TabEvent:CreateToggle("AutoPre", {
+        Name = "Bay Đến Đảo Dung Nham", CurrentValue = false,
+        Callback = function(v) _G.TweenToPre = v end
+    })
+
+    task.spawn(function()
+        while task.wait() do
+            if _G.TweenToPre then
+                local map = Workspace:FindFirstChild("Map")
+                local pre = map and map:FindFirstChild("PrehistoricIsland")
+                if pre and pre:FindFirstChild("Core") then
+                    local relic = pre.Core:FindFirstChild("PrehistoricRelic")
+                    local skull = relic and relic:FindFirstChild("Skull")
+                    if skull then Tween2(CFrame.new(skull.Position)) end
+                end
+            end
+        end
+    end)
+end
+
+-- ============================================================
+-- TAB MISC
+-- ============================================================
+local TabMisc = Window:CreateTab("Khác", 4483362458)
+TabMisc:CreateSection("Mã Code")
+
 local CODES = {
     "NOMOREHACK","BANEXPLOIT","WildDares","BossBuild","GetPranked","EARN_FRUITS",
     "FIGHT4FRUIT","NOEXPLOITER","NOOB2ADMIN","CODESLIDE","ADMINHACKED","ADMINDARES",
@@ -1130,20 +945,23 @@ local CODES = {
     "TheGreatAce","SECRET_ADMIN","SUB2GAMERROBOT_RESET1"
 }
 
-Tabs.Misc:AddButton({ Title="Nhập Code", Callback=function()
-    local r = ReplicatedStorage:FindFirstChild("Remotes")
-              and ReplicatedStorage.Remotes:FindFirstChild("Redeem")
-    if not r then return end
-    for _, c in ipairs(CODES) do
-        pcall(function() r:InvokeServer(c) end)
-        task.wait(0.2)
+TabMisc:CreateButton("BtnCodes", {
+    Name = "Nhập Tất Cả Code",
+    Callback = function()
+        local r = ReplicatedStorage:FindFirstChild("Remotes")
+                  and ReplicatedStorage.Remotes:FindFirstChild("Redeem")
+        if not r then return end
+        for _, c in ipairs(CODES) do
+            pcall(function() r:InvokeServer(c) end)
+            task.wait(0.2)
+        end
     end
-end})
+})
 
-Tabs.Misc:AddSection("Server")
-Tabs.Misc:AddButton({ Title="Rejoin", Callback=function()
+TabMisc:CreateSection("Server")
+TabMisc:CreateButton("BtnRejoin", { Name = "Rejoin", Callback = function()
     game:GetService("TeleportService"):Teleport(game.PlaceId, Player)
-end})
+end })
 
 function Hop()
     local http = game:GetService("HttpService")
@@ -1166,22 +984,18 @@ function Hop()
     end
 end
 
-Tabs.Misc:AddButton({ Title="Server Hop", Callback=function() Hop() end })
+TabMisc:CreateButton("BtnHop", { Name = "Server Hop", Callback = function() Hop() end })
 
-Tabs.Misc:AddSection("Phe")
-Tabs.Misc:AddButton({ Title="Hải Tặc", Callback=function()
+TabMisc:CreateSection("Phe")
+TabMisc:CreateButton("BtnPirate", { Name = "Hải Tặc", Callback = function()
     ReplicatedStorage.Remotes.CommF_:InvokeServer("SetTeam","Pirates")
-end})
-Tabs.Misc:AddButton({ Title="Hải Quân", Callback=function()
+end })
+TabMisc:CreateButton("BtnMarine", { Name = "Hải Quân", Callback = function()
     ReplicatedStorage.Remotes.CommF_:InvokeServer("SetTeam","Marines")
-end})
+end })
 
--- ============================================================
--- SETTINGS
--- ============================================================
-Tabs.Setting:AddSection("Cài Đặt")
-
-Tabs.Setting:AddButton({ Title="FPS Boost", Callback=function()
+TabMisc:CreateSection("Cài Đặt")
+TabMisc:CreateButton("BtnFPS", { Name = "FPS Boost", Callback = function()
     pcall(function()
         settings().Rendering.QualityLevel = "Level01"
         for _, v in pairs(game:GetDescendants()) do
@@ -1195,38 +1009,64 @@ Tabs.Setting:AddButton({ Title="FPS Boost", Callback=function()
         Lighting.FogEnd = 1e10
         Lighting.Brightness = 1
     end)
-end})
+end })
 
-Tabs.Setting:AddButton({ Title="Xóa Sương Mù", Callback=function()
+TabMisc:CreateButton("BtnFog", { Name = "Xóa Sương Mù", Callback = function()
     pcall(function()
         if Lighting:FindFirstChild("BaseAtmosphere") then Lighting.BaseAtmosphere:Destroy() end
         if Lighting:FindFirstChild("LightingLayers") then Lighting.LightingLayers:Destroy() end
         if Lighting:FindFirstChild("SeaTerrorCC") then Lighting.SeaTerrorCC:Destroy() end
         Lighting.FogEnd = 100000
     end)
-end})
+end })
 
 -- ============================================================
--- INFO + STATUS
+-- ESP PLAYER (đơn giản)
 -- ============================================================
-Tabs.Info:AddSection("Thông Tin")
-Tabs.Info:AddParagraph({ Title="Sea", Description=tostring(SEA) })
-Tabs.Info:AddParagraph({ Title="Build", Description="Merged (HDanh + Redz)" })
+local TabVisual = Window:CreateTab("ESP", 4483362458)
+TabVisual:CreateSection("ESP Người Chơi")
 
-Tabs.Status:AddSection("Trạng Thái")
-local lbl = Tabs.Status:AddParagraph({ Title="Player", Description="..." })
+ESPPlayer = false
+TabVisual:CreateToggle("ESPPlr", {
+    Name = "Bật ESP", CurrentValue = false,
+    Callback = function(v) ESPPlayer = v end
+})
+
 task.spawn(function()
-    while wait(1) do
+    while wait() do
         pcall(function()
-            if Player.Data then
-                lbl:SetDesc(
-                    "Lv: "..tostring(Player.Data.Level.Value)..
-                    " | Beli: "..tostring(Player.Data.Beli.Value)..
-                    " | F: "..tostring(Player.Data.Fragments.Value)
-                )
+            for _, p in pairs(Players:GetChildren()) do
+                if p ~= Player and p.Character and p.Character:FindFirstChild("Head") then
+                    local head = p.Character.Head
+                    if ESPPlayer then
+                        if not head:FindFirstChild("NameEsp"..Number) then
+                            local bg = Instance.new("BillboardGui", head)
+                            bg.Name = "NameEsp"..Number
+                            bg.Size = UDim2.new(1,200,1,30)
+                            bg.AlwaysOnTop = true
+                            local t = Instance.new("TextLabel", bg)
+                            t.Size = UDim2.new(1,0,1,0)
+                            t.BackgroundTransparency = 1
+                            t.TextStrokeTransparency = 0.5
+                            t.Font = Enum.Font.GothamSemibold
+                            t.TextSize = 14
+                        end
+                        local bg = head:FindFirstChild("NameEsp"..Number)
+                        if bg and p.Character:FindFirstChild("HumanoidRootPart") then
+                            local d = round((Root.Position - head.Position).Magnitude/3)
+                            local hp = round(p.Character.Humanoid.Health * 100 / p.Character.Humanoid.MaxHealth)
+                            bg.TextLabel.Text = p.Name.." | "..d.." | HP "..hp.."%"
+                            bg.TextLabel.TextColor3 = (p.Team==Player.Team)
+                                and Color3.fromRGB(0,255,0) or Color3.fromRGB(255,0,0)
+                        end
+                    else
+                        local e = head:FindFirstChild("NameEsp"..Number)
+                        if e then e:Destroy() end
+                    end
+                end
             end
         end)
     end
 end)
 
-print("[HDanh×Redz] Loaded OK | Sea "..tostring(SEA))
+print("[HDanh×Redz] FULL Loaded OK | SEA " .. tostring(SEA))

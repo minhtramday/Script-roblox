@@ -1,5 +1,5 @@
 -- ============================================================
--- HDANH x REDZ | FULL 100% - UI LIST LAYOUT (FIXED)
+-- HDANH x REDZ | FULL 100% - UI LIST LAYOUT (FIXED) + ĐÁNH XA
 -- ============================================================
 local Players           = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -12,6 +12,20 @@ local CoreGui           = game:GetService("CoreGui")
 
 local Player    = Players.LocalPlayer
 local PlayerGui = Player:WaitForChild("PlayerGui", 10)
+
+-- BIẾN ĐÁNH XA
+local Net       = ReplicatedStorage:WaitForChild("Modules"):WaitForChild("Net")
+local RE_Attack = Net:WaitForChild("RE/RegisterAttack")
+local RE_Hit    = Net:WaitForChild("RE/RegisterHit")
+local signedRemote, signedId
+for _, container in ipairs({ReplicatedStorage.Util, ReplicatedStorage.Common, ReplicatedStorage.Remotes, ReplicatedStorage.Assets, ReplicatedStorage.FX}) do
+    for _, obj in ipairs(container:GetChildren()) do
+        if obj:IsA("RemoteEvent") and obj:GetAttribute("Id") then signedRemote, signedId = obj, obj:GetAttribute("Id") end
+    end
+end
+_G.DungBypass = true
+_G.BanKinhDanh = 60
+_G.TocDoDanh = 0.03
 
 local Character = Player.Character or Player.CharacterAdded:Wait()
 local Humanoid  = Character:WaitForChild("Humanoid")
@@ -73,7 +87,7 @@ local Title = Instance.new("TextLabel")
 Title.Size = UDim2.new(1, -50, 1, 0)
 Title.Position = UDim2.new(0, 15, 0, 0)
 Title.BackgroundTransparency = 1
-Title.Text = "MINH | Full | Sea " .. tostring(SEA)
+Title.Text = "HDanh x Redz | Full | Sea " .. tostring(SEA)
 Title.TextColor3 = Color3.fromRGB(0, 255, 255)
 Title.Font = Enum.Font.GothamBold
 Title.TextSize = 16
@@ -103,13 +117,12 @@ TabBar.ScrollBarThickness = 2
 TabBar.ZIndex = 401
 TabBar.Parent = Frame
 
--- TAB BAR DÙNG UIListLayout
 local TabLayout = Instance.new("UIListLayout")
 TabLayout.Padding = UDim.new(0, 5)
 TabLayout.SortOrder = Enum.SortOrder.LayoutOrder
 TabLayout.Parent = TabBar
 
-local Content = Instance.new("Frame") -- Đổi sang Frame thay vì ScrollingFrame để fix lỗi CanvasSize
+local Content = Instance.new("Frame")
 Content.Size = UDim2.new(1, -120, 1, -45)
 Content.Position = UDim2.new(0, 115, 0, 40)
 Content.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
@@ -135,7 +148,6 @@ local function CreateTab(name)
     btn.Parent = TabBar
     Instance.new("UICorner", btn).CornerRadius = UDim.new(0.15, 0)
 
-    -- Mỗi tab là một ScrollingFrame chứa UIListLayout
     local frame = Instance.new("ScrollingFrame")
     frame.Size = UDim2.new(1, 0, 1, 0)
     frame.BackgroundTransparency = 1
@@ -143,10 +155,9 @@ local function CreateTab(name)
     frame.ZIndex = 402
     frame.ScrollBarThickness = 3
     frame.ScrollBarImageColor3 = Color3.fromRGB(0, 255, 255)
-    frame.CanvasSize = UDim2.new(0, 0, 0, 0) -- Sẽ được update tự động
+    frame.CanvasSize = UDim2.new(0, 0, 0, 0)
     frame.Parent = Content
 
-    -- TỰ ĐỘNG XẾP HÀNG
     local layout = Instance.new("UIListLayout")
     layout.Padding = UDim.new(0, 8)
     layout.SortOrder = Enum.SortOrder.LayoutOrder
@@ -388,6 +399,61 @@ function AttackNoCoolDown()
     end
 end
 
+-- HÀM ĐÁNH XA (TỪ MANGO)
+local function scanTargets(radius, targetName)
+    local char = Player.Character
+    if not char then return {}, nil end
+    local hrp = char:FindFirstChild("HumanoidRootPart")
+    if not hrp then return {}, nil end
+    local origin = hrp.Position
+    local list, firstHead = {}, nil
+
+    local function search(container)
+        if not container then return end
+        for _, mob in ipairs(container:GetChildren()) do
+            if mob ~= char then
+                local mhrp = mob:FindFirstChild("HumanoidRootPart")
+                local mhum = mob:FindFirstChild("Humanoid")
+                if mhrp and mhum and mhum.Health > 0 and (mhrp.Position - origin).Magnitude <= radius then
+                    if not targetName or string.find(mob.Name, targetName) then
+                        for _, part in ipairs(mob:GetChildren()) do
+                            if part:IsA("BasePart") then
+                                table.insert(list, {mob, part})
+                            end
+                        end
+                        if not firstHead then firstHead = mob:FindFirstChild("Head") or mhrp end
+                    end
+                end
+            end
+        end
+    end
+    search(Workspace:FindFirstChild("Enemies"))
+    search(Workspace:FindFirstChild("Characters"))
+    return list, firstHead
+end
+
+local function fireHit(head, list)
+    if not head or #list == 0 then return end
+    pcall(function() RE_Attack:FireServer(1e-9) end)
+    
+    if signedRemote and signedId and _G.DungBypass then
+        pcall(function()
+            local fakeName = string.gsub("RE/RegisterHit", ".", function(ch)
+                return string.char(bit32.bxor(string.byte(ch), math.floor(workspace:GetServerTimeNow() / 10 % 10) + 1))
+            end)
+            local seed = 0
+            pcall(function() seed = Net.seed:InvokeServer() * 2 end)
+            local sig = bit32.bxor(signedId + 909090, seed)
+            cloneref(signedRemote):FireServer(fakeName, sig, head, list)
+        end)
+    else
+        pcall(function()
+            local sig = tostring(Player.UserId):sub(2, 4) .. tostring(coroutine.running()):sub(11, 15)
+            RE_Hit:FireServer(head, list, {}, sig)
+        end)
+    end
+end
+
 Sea1, Sea2, Sea3 = SEA == 1, SEA == 2, SEA == 3
 
 function CheckLevel()
@@ -549,7 +615,7 @@ end
 local TabMain = CreateTab("Cày Cấp")
 AddSection(TabMain, "Cày Cấp Tự Động")
 AddDropdown(TabMain, "Vũ Khí", {"Melee", "Sword", "Gun", "Blox Fruit"}, "Melee", function(v) SelectWeapon = v end)
-AddToggle(TabMain, "Cày Cấp", false, function(v) _G.AutoLevel = v end)
+AddToggle(TabMain, "Cày Cấp (Đánh Xa)", false, function(v) _G.AutoLevel = v end)
 AddToggle(TabMain, "Đánh Quái Gần", false, function(v) _G.AutoNear = v end)
 AddToggle(TabMain, "Gom Quái", true, function(v) _G.BringMob = v end)
 AddToggle(TabMain, "Đánh Nhanh (25% HP)", false, function(v) _G.OneHitKill = v end)
@@ -592,7 +658,12 @@ task.spawn(function()
                             if mob.Name == Ms and mob:FindFirstChild("Humanoid") and mob.Humanoid.Health > 0 then
                                 repeat
                                     task.wait(_G.Fast_Delay)
-                                    AttackNoCoolDown()
+                                    
+                                    -- ĐÁNH XA
+                                    local list, head = scanTargets(_G.BanKinhDanh, Ms)
+                                    if #list == 0 then list, head = scanTargets(_G.BanKinhDanh, nil) end
+                                    if #list > 0 then fireHit(head, list) end
+                                    
                                     AutoHaki()
                                     EquipTool(_CURRENT_WEAPON or SelectWeapon)
                                     local cf = mob.HumanoidRootPart.CFrame * CFrame.new(0, 30, 0)
@@ -630,7 +701,11 @@ task.spawn(function()
                        and (mob.HumanoidRootPart.Position - Root.Position).Magnitude <= 5000 then
                         repeat
                             task.wait(_G.Fast_Delay)
-                            AttackNoCoolDown()
+                            
+                            -- ĐÁNH XA
+                            local list, head = scanTargets(_G.BanKinhDanh, nil)
+                            if #list > 0 then fireHit(head, list) end
+                            
                             AutoHaki()
                             EquipTool(_CURRENT_WEAPON or SelectWeapon)
                             local cf = mob.HumanoidRootPart.CFrame * CFrame.new(0, 30, 0)
@@ -818,7 +893,11 @@ if Sea2 or Sea3 then
                             if mob:FindFirstChild("Humanoid") and mob:FindFirstChild("HumanoidRootPart") and mob.Humanoid.Health > 0 and (mob.HumanoidRootPart.Position - Root.Position).Magnitude <= 1000 then
                                 repeat
                                     task.wait(_G.Fast_Delay)
-                                    AttackNoCoolDown()
+                                    
+                                    -- ĐÁNH XA
+                                    local list, head = scanTargets(_G.BanKinhDanh, nil)
+                                    if #list > 0 then fireHit(head, list) end
+                                    
                                     AutoHaki()
                                     EquipTool(_CURRENT_WEAPON or SelectWeapon)
                                     local cf = mob.HumanoidRootPart.CFrame * CFrame.new(0,30,0)
@@ -846,7 +925,8 @@ task.spawn(function()
                         if mob.Name == "Saber Expert" and mob:FindFirstChild("Humanoid") and mob.Humanoid.Health > 0 then
                             repeat
                                 task.wait(_G.Fast_Delay)
-                                AttackNoCoolDown()
+                                local list, head = scanTargets(_G.BanKinhDanh, nil)
+                                if #list > 0 then fireHit(head, list) end
                                 AutoHaki()
                                 EquipTool(_CURRENT_WEAPON or SelectWeapon)
                                 local cf = mob.HumanoidRootPart.CFrame * CFrame.new(0, 30, 0)
@@ -872,7 +952,8 @@ task.spawn(function()
                         if mob.Name == "Thunder God" and mob:FindFirstChild("Humanoid") and mob.Humanoid.Health > 0 then
                             repeat
                                 task.wait(_G.Fast_Delay)
-                                AttackNoCoolDown()
+                                local list, head = scanTargets(_G.BanKinhDanh, nil)
+                                if #list > 0 then fireHit(head, list) end
                                 AutoHaki()
                                 EquipTool(_CURRENT_WEAPON or SelectWeapon)
                                 local cf = mob.HumanoidRootPart.CFrame * CFrame.new(0, 30, 0)
@@ -898,7 +979,8 @@ task.spawn(function()
                         if mob.Name == "Longma" and mob:FindFirstChild("Humanoid") and mob.Humanoid.Health > 0 then
                             repeat
                                 task.wait(_G.Fast_Delay)
-                                AttackNoCoolDown()
+                                local list, head = scanTargets(_G.BanKinhDanh, nil)
+                                if #list > 0 then fireHit(head, list) end
                                 AutoHaki()
                                 EquipTool(_CURRENT_WEAPON or SelectWeapon)
                                 local cf = mob.HumanoidRootPart.CFrame * CFrame.new(0, 30, 0)
@@ -934,7 +1016,8 @@ task.spawn(function()
                         if mob.Name == "Longma" and mob:FindFirstChild("Humanoid") and mob.Humanoid.Health > 0 then
                             repeat
                                 task.wait(_G.Fast_Delay)
-                                AttackNoCoolDown()
+                                local list, head = scanTargets(_G.BanKinhDanh, nil)
+                                if #list > 0 then fireHit(head, list) end
                                 AutoHaki()
                                 EquipTool(_CURRENT_WEAPON or SelectWeapon)
                                 local cf = mob.HumanoidRootPart.CFrame * CFrame.new(0, 30, 0)
@@ -961,7 +1044,8 @@ task.spawn(function()
                 if boss and boss:FindFirstChild("Humanoid") and boss.Humanoid.Health > 0 then
                     repeat
                         task.wait(_G.Fast_Delay)
-                        AttackNoCoolDown()
+                        local list, head = scanTargets(_G.BanKinhDanh, nil)
+                        if #list > 0 then fireHit(head, list) end
                         AutoHaki()
                         EquipTool(_CURRENT_WEAPON or SelectWeapon)
                         local cf = boss.HumanoidRootPart.CFrame * CFrame.new(0, 30, 0)
@@ -1130,4 +1214,4 @@ task.spawn(function()
     end
 end)
 
-print("[HDanh×Redz] FULL 100% Fixed (UIListLayout) | SEA " .. tostring(SEA))
+print("[HDanh×Redz] FULL 100% + Đánh Xa (Fixed UI) | SEA " .. tostring(SEA))

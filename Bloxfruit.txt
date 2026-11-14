@@ -1,5 +1,5 @@
 -- ============================================================
--- HDANH x REDZ | FULL BUILD - ORION UI (MOBILE OPTIMIZED)
+-- HDANH x REDZ | FULL BUILD - RAYFIELD FIXED
 -- ============================================================
 local Players           = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -27,26 +27,27 @@ local SEA = (game.PlaceId == 2753915549 or game.PlaceId == 85211729168715) and 1
          or 0
 
 -- ============================================================
--- LOAD ORION LIBRARY
+-- LOAD RAYFIELD
 -- ============================================================
-local OrionLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/shlexware/Orion/main/source"))()
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
-local Window = OrionLib:MakeWindow({
+local Window = Rayfield:CreateWindow({
     Name = "HDanh x Redz | Sea " .. tostring(SEA),
-    HidePremium = false,
-    SaveConfig = false,
-    ConfigFolder = "HDanhRedz",
-    IntroEnabled = true,
-    IntroText = "HDanh x Redz",
-    IntroIcon = "rbxassetid://123613996022560"
+    LoadingTitle = "Đang tải script...",
+    LoadingSubtitle = "by Axiom Merge",
+    ConfigurationSaving = {
+        Enabled = false,
+        FolderName = nil, 
+        FileName = "HDanhRedz"
+    },
+    KeySystem = false
 })
 
--- Thông báo load xong
-OrionLib:MakeNotification({
-    Name = "Đã Load!",
-    Content = "Menu HDanh x Redz đã sẵn sàng.",
-    Image = "rbxassetid://4483362458",
-    Time = 5
+Rayfield:Notify({
+    Title = "HDanh x Redz",
+    Content = "Menu đã sẵn sàng! SEA: " .. tostring(SEA),
+    Duration = 4,
+    Image = 4483362458
 })
 
 -- ============================================================
@@ -306,47 +307,54 @@ end
 -- ============================================================
 -- TAB MAIN: CÀY CẤP
 -- ============================================================
-local TabMain = Window:MakeTab({
-    Name = "Cày Cấp",
-    Icon = "rbxassetid://4483362458",
-    PremiumOnly = false
-})
+local TabMain = Window:CreateTab("Cày Cấp", 4483362458)
+TabMain:CreateSection("Cày Cấp Tự Động")
 
-TabMain:AddSection({ Name = "Cày Cấp Tự Động" })
-
-TabMain:AddDropdown({
+TabMain:CreateDropdown("SelectWeaponDrop", {
     Name = "Vũ Khí",
-    Default = "Melee",
     Options = { "Melee", "Sword", "Gun", "Blox Fruit" },
-    Callback = function(Value) SelectWeapon = Value end
+    CurrentOption = "Melee",
+    MultipleOptions = false,
+    Flag = "WeaponType",
+    Callback = function(Option)
+        SelectWeapon = Option
+    end
 })
 
-TabMain:AddToggle({
+TabMain:CreateToggle("ToggleLevel", {
     Name = "Cày Cấp",
-    Default = false,
+    CurrentValue = false,
     Flag = "AutoLevel",
-    Callback = function(Value) _G.AutoLevel = Value end
+    Callback = function(Value)
+        _G.AutoLevel = Value
+    end
 })
 
-TabMain:AddToggle({
+TabMain:CreateToggle("ToggleMobAura", {
     Name = "Đánh Quái Gần",
-    Default = false,
+    CurrentValue = false,
     Flag = "AutoNear",
-    Callback = function(Value) _G.AutoNear = Value end
+    Callback = function(Value)
+        _G.AutoNear = Value
+    end
 })
 
-TabMain:AddToggle({
+TabMain:CreateToggle("ToggleBring", {
     Name = "Gom Quái",
-    Default = true,
+    CurrentValue = true,
     Flag = "BringMob",
-    Callback = function(Value) _G.BringMob = Value end
+    Callback = function(Value)
+        _G.BringMob = Value
+    end
 })
 
-TabMain:AddToggle({
+TabMain:CreateToggle("ToggleOneHit", {
     Name = "Đánh Nhanh (Clamp 25% HP)",
-    Default = false,
+    CurrentValue = false,
     Flag = "OneHitKill",
-    Callback = function(Value) _G.OneHitKill = Value end
+    Callback = function(Value)
+        _G.OneHitKill = Value
+    end
 })
 
 _G.Fast_Delay = 1e-9
@@ -486,13 +494,8 @@ end)
 -- ============================================================
 -- TAB TELEPORT
 -- ============================================================
-local TabTele = Window:MakeTab({
-    Name = "Dịch Chuyển",
-    Icon = "rbxassetid://4483362458",
-    PremiumOnly = false
-})
-
-TabTele:AddSection({ Name = "Bay Đến Đảo" })
+local TabTele = Window:CreateTab("Dịch Chuyển", 4483362458)
+TabTele:CreateSection("Bay Đến Đảo")
 
 local Islands = {}
 if Sea1 then
@@ -547,17 +550,14 @@ local islandList = {}
 for k in pairs(Islands) do table.insert(islandList, k) end
 table.sort(islandList)
 
-TabTele:AddDropdown({
-    Name = "Chọn Đảo",
-    Default = islandList[1],
-    Options = islandList,
-    Callback = function(Value) _G.SelectIsland = Value end
+TabTele:CreateDropdown("DropIsland", {
+    Name = "Chọn Đảo", Options = islandList, CurrentOption = islandList[1],
+    MultipleOptions = false, Flag = "SelectedIsland",
+    Callback = function(Option) _G.SelectIsland = Option end
 })
 
-TabTele:AddToggle({
-    Name = "Bay Đến Đảo",
-    Default = false,
-    Flag = "AutoIsland",
+TabTele:CreateToggle("ToggleAutoIsland", {
+    Name = "Bay Đến Đảo", CurrentValue = false, Flag = "AutoIsland",
     Callback = function(Value) _G.TeleportIsland = Value end
 })
 
@@ -569,39 +569,31 @@ task.spawn(function()
     end
 end)
 
-TabTele:AddSection({ Name = "Biển" })
-TabTele:AddButton({ Name = "Biển 1", Callback = function() ReplicatedStorage.Remotes.CommF_:InvokeServer("TravelMain") end })
-TabTele:AddButton({ Name = "Biển 2", Callback = function() ReplicatedStorage.Remotes.CommF_:InvokeServer("TravelDressrosa") end })
-TabTele:AddButton({ Name = "Biển 3", Callback = function() ReplicatedStorage.Remotes.CommF_:InvokeServer("TravelZou") end })
+TabTele:CreateSection("Biển")
+TabTele:CreateButton("BtnSea1", { Name = "Biển 1",
+    Callback = function() ReplicatedStorage.Remotes.CommF_:InvokeServer("TravelMain") end })
+TabTele:CreateButton("BtnSea2", { Name = "Biển 2",
+    Callback = function() ReplicatedStorage.Remotes.CommF_:InvokeServer("TravelDressrosa") end })
+TabTele:CreateButton("BtnSea3", { Name = "Biển 3",
+    Callback = function() ReplicatedStorage.Remotes.CommF_:InvokeServer("TravelZou") end })
 
 -- ============================================================
 -- TAB STATS
 -- ============================================================
-local TabStats = Window:MakeTab({
-    Name = "Chỉ Số",
-    Icon = "rbxassetid://4483362458",
-    PremiumOnly = false
-})
-
-TabStats:AddSection({ Name = "Tự Động Nâng Điểm" })
+local TabStats = Window:CreateTab("Chỉ Số", 4483362458)
+TabStats:CreateSection("Tự Động Nâng Điểm")
 
 local sFlags = { Melee=false, Defense=false, Sword=false, Gun=false, Fruit=false }
-TabStats:AddToggle({ Name = "Melee", Default = false, Callback = function(v) sFlags.Melee=v end })
-TabStats:AddToggle({ Name = "Defense", Default = false, Callback = function(v) sFlags.Defense=v end })
-TabStats:AddToggle({ Name = "Sword", Default = false, Callback = function(v) sFlags.Sword=v end })
-TabStats:AddToggle({ Name = "Gun", Default = false, Callback = function(v) sFlags.Gun=v end })
-TabStats:AddToggle({ Name = "Devil Fruit", Default = false, Callback = function(v) sFlags.Fruit=v end })
+TabStats:CreateToggle("SPMelee", { Name="Melee", CurrentValue=false, Callback=function(v) sFlags.Melee=v end })
+TabStats:CreateToggle("SPDefense", { Name="Defense", CurrentValue=false, Callback=function(v) sFlags.Defense=v end })
+TabStats:CreateToggle("SPSword", { Name="Sword", CurrentValue=false, Callback=function(v) sFlags.Sword=v end })
+TabStats:CreateToggle("SPGun", { Name="Gun", CurrentValue=false, Callback=function(v) sFlags.Gun=v end })
+TabStats:CreateToggle("SPFruit", { Name="Devil Fruit", CurrentValue=false, Callback=function(v) sFlags.Fruit=v end })
 
 local ptsPerTick = 1
-TabStats:AddSlider({
-    Name = "Điểm mỗi tick",
-    Min = 1,
-    Max = 100,
-    Default = 1,
-    Color = Color3.fromRGB(255,255,255),
-    Increment = 1,
-    ValueName = "Points",
-    Callback = function(v) ptsPerTick = v end    
+TabStats:CreateSlider("SliderPts", {
+    Name = "Điểm mỗi tick", Range = { 1, 100 }, Increment = 1,
+    Suffix = "", CurrentValue = 1, Callback = function(v) ptsPerTick = v end
 })
 
 task.spawn(function()
@@ -628,27 +620,20 @@ end)
 -- TAB RAID
 -- ============================================================
 if Sea2 or Sea3 then
-    local TabRaid = Window:MakeTab({
-        Name = "Đột Kích",
-        Icon = "rbxassetid://4483362458",
-        PremiumOnly = false
-    })
-    TabRaid:AddSection({ Name = "Raid Cơ Bản" })
+    local TabRaid = Window:CreateTab("Đột Kích", 4483362458)
+    TabRaid:CreateSection("Raid Cơ Bản")
 
     local chips = {"Flame","Ice","Quake","Light","Dark","Spider","Rumble","Magma","Buddha","Sand","Phoenix","Dough"}
     _G.SelectChip = "Flame"
 
-    TabRaid:AddDropdown({
-        Name = "Chọn Chip",
-        Default = "Flame",
-        Options = chips,
-        Callback = function(Value) _G.SelectChip = Value end
+    TabRaid:CreateDropdown("DropChip", {
+        Name = "Chọn Chip", Options = chips, CurrentOption = "Flame",
+        MultipleOptions = false, Callback = function(v) _G.SelectChip = v end
     })
 
-    TabRaid:AddToggle({
-        Name = "Mua Chip",
-        Default = false,
-        Callback = function(Value) _G.BuyChip = Value end
+    TabRaid:CreateToggle("BuyChip", {
+        Name = "Mua Chip", CurrentValue = false,
+        Callback = function(v) _G.BuyChip = v end
     })
 
     task.spawn(function()
@@ -661,10 +646,9 @@ if Sea2 or Sea3 then
         end
     end)
 
-    TabRaid:AddToggle({
-        Name = "Bắt Đầu Raid",
-        Default = false,
-        Callback = function(Value) _G.StartRaid = Value end
+    TabRaid:CreateToggle("StartRaid", {
+        Name = "Bắt Đầu Raid", CurrentValue = false,
+        Callback = function(v) _G.StartRaid = v end
     })
 
     task.spawn(function()
@@ -690,10 +674,9 @@ if Sea2 or Sea3 then
         end
     end)
 
-    TabRaid:AddToggle({
-        Name = "Đánh Quái Raid",
-        Default = false,
-        Callback = function(Value) _G.Dungeon = Value end
+    TabRaid:CreateToggle("Dungeon", {
+        Name = "Đánh Quái Raid", CurrentValue = false,
+        Callback = function(v) _G.Dungeon = v end
     })
 
     task.spawn(function()
@@ -726,17 +709,12 @@ end
 -- ============================================================
 -- TAB ITEM (Kiếm)
 -- ============================================================
-local TabItem = Window:MakeTab({
-    Name = "Vật Phẩm",
-    Icon = "rbxassetid://4483362458",
-    PremiumOnly = false
-})
-TabItem:AddSection({ Name = "Auto Lấy Kiếm" })
+local TabItem = Window:CreateTab("Vật Phẩm", 4483362458)
+TabItem:CreateSection("Auto Lấy Kiếm")
 
-TabItem:AddToggle({
-    Name = "Saber",
-    Default = false,
-    Callback = function(Value) _G.Auto_Saber = Value end
+TabItem:CreateToggle("AutoSaber", {
+    Name = "Saber", CurrentValue = false,
+    Callback = function(v) _G.Auto_Saber = v end
 })
 
 task.spawn(function()
@@ -764,10 +742,9 @@ task.spawn(function()
     end
 end)
 
-TabItem:AddToggle({
-    Name = "Pole V1 (Thunder God)",
-    Default = false,
-    Callback = function(Value) _G.AutoPole = Value end
+TabItem:CreateToggle("AutoPole", {
+    Name = "Pole V1 (Thunder God)", CurrentValue = false,
+    Callback = function(v) _G.AutoPole = v end
 })
 
 task.spawn(function()
@@ -795,10 +772,9 @@ task.spawn(function()
     end
 end)
 
-TabItem:AddToggle({
-    Name = "Wando (Longma)",
-    Default = false,
-    Callback = function(Value) _G.Auto_Wando = Value end
+TabItem:CreateToggle("AutoWando", {
+    Name = "Wando (Longma)", CurrentValue = false,
+    Callback = function(v) _G.Auto_Wando = v end
 })
 
 task.spawn(function()
@@ -826,10 +802,9 @@ task.spawn(function()
     end
 end)
 
-TabItem:AddToggle({
-    Name = "Yama",
-    Default = false,
-    Callback = function(Value) _G.AutoYama = Value end
+TabItem:CreateToggle("AutoYama", {
+    Name = "Yama", CurrentValue = false,
+    Callback = function(v) _G.AutoYama = v end
 })
 
 task.spawn(function()
@@ -841,10 +816,9 @@ task.spawn(function()
     end
 end)
 
-TabItem:AddToggle({
-    Name = "Tushita",
-    Default = false,
-    Callback = function(Value) _G.AutoTushita = Value end
+TabItem:CreateToggle("AutoTushita", {
+    Name = "Tushita", CurrentValue = false,
+    Callback = function(v) _G.AutoTushita = v end
 })
 
 task.spawn(function()
@@ -872,10 +846,9 @@ task.spawn(function()
     end
 end)
 
-TabItem:AddToggle({
-    Name = "Cursed Dual Katana",
-    Default = false,
-    Callback = function(Value) _G.Auto_CDK = Value end
+TabItem:CreateToggle("AutoCDK", {
+    Name = "Cursed Dual Katana", CurrentValue = false,
+    Callback = function(v) _G.Auto_CDK = v end
 })
 
 task.spawn(function()
@@ -906,18 +879,14 @@ end)
 -- TAB EVENT (Sea 3)
 -- ============================================================
 if Sea3 then
-    local TabEvent = Window:MakeTab({
-        Name = "Sự Kiện",
-        Icon = "rbxassetid://4483362458",
-        PremiumOnly = false
+    local TabEvent = Window:CreateTab("Sự Kiện", 4483362458)
+    TabEvent:CreateSection("Kitsune")
+
+    TabEvent:CreateToggle("AutoKitsune", {
+        Name = "Bay Đến Đảo Cáo", CurrentValue = false,
+        Callback = function(v) _G.TweenToKitsune = v end
     })
-    
-    TabEvent:AddSection({ Name = "Kitsune" })
-    TabEvent:AddToggle({
-        Name = "Bay Đến Đảo Cáo",
-        Default = false,
-        Callback = function(Value) _G.TweenToKitsune = Value end
-    })
+
     task.spawn(function()
         while task.wait() do
             if _G.TweenToKitsune then
@@ -937,12 +906,12 @@ if Sea3 then
         end
     end)
 
-    TabEvent:AddSection({ Name = "Leviathan" })
-    TabEvent:AddToggle({
-        Name = "Bay Đến Đảo Leviathan",
-        Default = false,
-        Callback = function(Value) _G.TweenToLev = Value end
+    TabEvent:CreateSection("Leviathan")
+    TabEvent:CreateToggle("AutoLev", {
+        Name = "Bay Đến Đảo Leviathan", CurrentValue = false,
+        Callback = function(v) _G.TweenToLev = v end
     })
+
     task.spawn(function()
         while task.wait() do
             if _G.TweenToLev then
@@ -953,12 +922,12 @@ if Sea3 then
         end
     end)
 
-    TabEvent:AddSection({ Name = "Prehistoric" })
-    TabEvent:AddToggle({
-        Name = "Bay Đến Đảo Dung Nham",
-        Default = false,
-        Callback = function(Value) _G.TweenToPre = Value end
+    TabEvent:CreateSection("Prehistoric")
+    TabEvent:CreateToggle("AutoPre", {
+        Name = "Bay Đến Đảo Dung Nham", CurrentValue = false,
+        Callback = function(v) _G.TweenToPre = v end
     })
+
     task.spawn(function()
         while task.wait() do
             if _G.TweenToPre then
@@ -977,13 +946,9 @@ end
 -- ============================================================
 -- TAB MISC
 -- ============================================================
-local TabMisc = Window:MakeTab({
-    Name = "Khác",
-    Icon = "rbxassetid://4483362458",
-    PremiumOnly = false
-})
+local TabMisc = Window:CreateTab("Khác", 4483362458)
+TabMisc:CreateSection("Mã Code")
 
-TabMisc:AddSection({ Name = "Mã Code" })
 local CODES = {
     "NOMOREHACK","BANEXPLOIT","WildDares","BossBuild","GetPranked","EARN_FRUITS",
     "FIGHT4FRUIT","NOEXPLOITER","NOOB2ADMIN","CODESLIDE","ADMINHACKED","ADMINDARES",
@@ -995,7 +960,7 @@ local CODES = {
     "TheGreatAce","SECRET_ADMIN","SUB2GAMERROBOT_RESET1"
 }
 
-TabMisc:AddButton({
+TabMisc:CreateButton("BtnCodes", {
     Name = "Nhập Tất Cả Code",
     Callback = function()
         local r = ReplicatedStorage:FindFirstChild("Remotes")
@@ -1008,11 +973,10 @@ TabMisc:AddButton({
     end
 })
 
-TabMisc:AddSection({ Name = "Server" })
-TabMisc:AddButton({
-    Name = "Rejoin",
-    Callback = function() game:GetService("TeleportService"):Teleport(game.PlaceId, Player) end
-})
+TabMisc:CreateSection("Server")
+TabMisc:CreateButton("BtnRejoin", { Name = "Rejoin", Callback = function()
+    game:GetService("TeleportService"):Teleport(game.PlaceId, Player)
+end })
 
 function Hop()
     local http = game:GetService("HttpService")
@@ -1035,64 +999,52 @@ function Hop()
     end
 end
 
-TabMisc:AddButton({ Name = "Server Hop", Callback = function() Hop() end })
+TabMisc:CreateButton("BtnHop", { Name = "Server Hop", Callback = function() Hop() end })
 
-TabMisc:AddSection({ Name = "Phe" })
-TabMisc:AddButton({
-    Name = "Hải Tặc",
-    Callback = function() ReplicatedStorage.Remotes.CommF_:InvokeServer("SetTeam","Pirates") end
-})
-TabMisc:AddButton({
-    Name = "Hải Quân",
-    Callback = function() ReplicatedStorage.Remotes.CommF_:InvokeServer("SetTeam","Marines") end
-})
+TabMisc:CreateSection("Phe")
+TabMisc:CreateButton("BtnPirate", { Name = "Hải Tặc", Callback = function()
+    ReplicatedStorage.Remotes.CommF_:InvokeServer("SetTeam","Pirates")
+end })
+TabMisc:CreateButton("BtnMarine", { Name = "Hải Quân", Callback = function()
+    ReplicatedStorage.Remotes.CommF_:InvokeServer("SetTeam","Marines")
+end })
 
-TabMisc:AddSection({ Name = "Cài Đặt" })
-TabMisc:AddButton({
-    Name = "FPS Boost",
-    Callback = function()
-        pcall(function()
-            settings().Rendering.QualityLevel = "Level01"
-            for _, v in pairs(game:GetDescendants()) do
-                if v:IsA("ParticleEmitter") or v:IsA("Trail") then
-                    v.Lifetime = NumberRange.new(0)
-                elseif v:IsA("Fire") or v:IsA("Smoke") or v:IsA("Sparkles") then
-                    v.Enabled = false
-                end
+TabMisc:CreateSection("Cài Đặt")
+TabMisc:CreateButton("BtnFPS", { Name = "FPS Boost", Callback = function()
+    pcall(function()
+        settings().Rendering.QualityLevel = "Level01"
+        for _, v in pairs(game:GetDescendants()) do
+            if v:IsA("ParticleEmitter") or v:IsA("Trail") then
+                v.Lifetime = NumberRange.new(0)
+            elseif v:IsA("Fire") or v:IsA("Smoke") or v:IsA("Sparkles") then
+                v.Enabled = false
             end
-            Lighting.GlobalShadows = false
-            Lighting.FogEnd = 1e10
-            Lighting.Brightness = 1
-        end)
-    end
-})
-TabMisc:AddButton({
-    Name = "Xóa Sương Mù",
-    Callback = function()
-        pcall(function()
-            if Lighting:FindFirstChild("BaseAtmosphere") then Lighting.BaseAtmosphere:Destroy() end
-            if Lighting:FindFirstChild("LightingLayers") then Lighting.LightingLayers:Destroy() end
-            if Lighting:FindFirstChild("SeaTerrorCC") then Lighting.SeaTerrorCC:Destroy() end
-            Lighting.FogEnd = 100000
-        end)
-    end
-})
+        end
+        Lighting.GlobalShadows = false
+        Lighting.FogEnd = 1e10
+        Lighting.Brightness = 1
+    end)
+end })
+
+TabMisc:CreateButton("BtnFog", { Name = "Xóa Sương Mù", Callback = function()
+    pcall(function()
+        if Lighting:FindFirstChild("BaseAtmosphere") then Lighting.BaseAtmosphere:Destroy() end
+        if Lighting:FindFirstChild("LightingLayers") then Lighting.LightingLayers:Destroy() end
+        if Lighting:FindFirstChild("SeaTerrorCC") then Lighting.SeaTerrorCC:Destroy() end
+        Lighting.FogEnd = 100000
+    end)
+end })
 
 -- ============================================================
 -- ESP PLAYER (đơn giản)
 -- ============================================================
-local TabVisual = Window:MakeTab({
-    Name = "ESP",
-    Icon = "rbxassetid://4483362458",
-    PremiumOnly = false
-})
-TabVisual:AddSection({ Name = "ESP Người Chơi" })
+local TabVisual = Window:CreateTab("ESP", 4483362458)
+TabVisual:CreateSection("ESP Người Chơi")
 
 ESPPlayer = false
-TabVisual:AddToggle({
-    Name = "Bật ESP",
-    Default = false,
-    Callback = function(Value) ESPPlayer = Value end
+TabVisual:CreateToggle("ESPPlr", {
+    Name = "Bật ESP", CurrentValue = false,
+    Callback = function(v) ESPPlayer = v end
 })
 
 task.spawn(function()
@@ -1132,4 +1084,4 @@ task.spawn(function()
     end
 end)
 
-print("[HDanh×Redz] FULL Orion Loaded OK | SEA " .. tostring(SEA))
+print("[HDanh×Redz] Loaded OK | SEA " .. tostring(SEA))

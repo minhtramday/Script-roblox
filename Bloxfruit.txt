@@ -1,5 +1,5 @@
 -- ============================================================
--- HDANH x REDZ | FULL 100% - FIXED UI LAYOUT
+-- HDANH x REDZ | FULL 100% - UI LIST LAYOUT (FIXED)
 -- ============================================================
 local Players           = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -28,7 +28,7 @@ local SEA = (game.PlaceId == 2753915549 or game.PlaceId == 85211729168715) and 1
          or 0
 
 -- ============================================================
--- UI TỰ CODE (ĐÃ FIX LỖI ĐÈ NÚT)
+-- UI TỰ CODE (UIListLayout TỰ ĐỘNG XẾP HÀNG)
 -- ============================================================
 local MainGui = Instance.new("ScreenGui")
 MainGui.Name = "HDanhRedz"
@@ -103,14 +103,17 @@ TabBar.ScrollBarThickness = 2
 TabBar.ZIndex = 401
 TabBar.Parent = Frame
 
-local Content = Instance.new("ScrollingFrame")
+-- TAB BAR DÙNG UIListLayout
+local TabLayout = Instance.new("UIListLayout")
+TabLayout.Padding = UDim.new(0, 5)
+TabLayout.SortOrder = Enum.SortOrder.LayoutOrder
+TabLayout.Parent = TabBar
+
+local Content = Instance.new("Frame") -- Đổi sang Frame thay vì ScrollingFrame để fix lỗi CanvasSize
 Content.Size = UDim2.new(1, -120, 1, -45)
 Content.Position = UDim2.new(0, 115, 0, 40)
 Content.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
 Content.BorderSizePixel = 0
-Content.ScrollBarThickness = 3
-Content.ScrollBarImageColor3 = Color3.fromRGB(0, 255, 255)
-Content.CanvasSize = UDim2.new(0, 0, 0, 0)
 Content.ZIndex = 401
 Content.Parent = Frame
 
@@ -122,7 +125,6 @@ local ActiveTab = nil
 local function CreateTab(name)
     local btn = Instance.new("TextButton")
     btn.Size = UDim2.new(1, -10, 0, 30)
-    btn.Position = UDim2.new(0, 5, 0, 5 + (#Tabs * 35))
     btn.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
     btn.Text = name
     btn.TextColor3 = Color3.fromRGB(200, 200, 200)
@@ -133,15 +135,24 @@ local function CreateTab(name)
     btn.Parent = TabBar
     Instance.new("UICorner", btn).CornerRadius = UDim.new(0.15, 0)
 
-    local frame = Instance.new("Frame")
+    -- Mỗi tab là một ScrollingFrame chứa UIListLayout
+    local frame = Instance.new("ScrollingFrame")
     frame.Size = UDim2.new(1, 0, 1, 0)
     frame.BackgroundTransparency = 1
     frame.Visible = false
     frame.ZIndex = 402
+    frame.ScrollBarThickness = 3
+    frame.ScrollBarImageColor3 = Color3.fromRGB(0, 255, 255)
+    frame.CanvasSize = UDim2.new(0, 0, 0, 0) -- Sẽ được update tự động
     frame.Parent = Content
-    frame:SetAttribute("ItemY", 5) -- BỘ ĐẾM TỌA ĐỘ Y
 
-    local tab = { Btn = btn, Frame = frame, Name = name }
+    -- TỰ ĐỘNG XẾP HÀNG
+    local layout = Instance.new("UIListLayout")
+    layout.Padding = UDim.new(0, 8)
+    layout.SortOrder = Enum.SortOrder.LayoutOrder
+    layout.Parent = frame
+
+    local tab = { Btn = btn, Frame = frame, Name = name, Layout = layout }
     table.insert(Tabs, tab)
 
     btn.MouseButton1Click:Connect(function()
@@ -162,17 +173,22 @@ local function CreateTab(name)
         btn.TextColor3 = Color3.fromRGB(0, 0, 0)
         ActiveTab = name
     end
-    
-    TabBar.CanvasSize = UDim2.new(0, 0, 0, #Tabs * 35 + 10)
     return frame
 end
 
--- FIX: Dùng Attribute ItemY để cộng dồn tọa độ, không dùng #GetChildren()
+local function UpdateCanvas(parent)
+    local layout = parent:FindFirstChildOfClass("UIListLayout")
+    if layout then
+        parent.CanvasSize = UDim2.new(0, 0, 0, layout.AbsoluteContentSize.Y + 20)
+        layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+            parent.CanvasSize = UDim2.new(0, 0, 0, layout.AbsoluteContentSize.Y + 20)
+        end)
+    end
+end
+
 local function AddSection(parent, text)
-    local currentY = parent:GetAttribute("ItemY") or 5
     local f = Instance.new("Frame")
     f.Size = UDim2.new(1, -10, 0, 25)
-    f.Position = UDim2.new(0, 5, 0, currentY)
     f.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
     f.BorderSizePixel = 0
     f.ZIndex = 402
@@ -188,16 +204,12 @@ local function AddSection(parent, text)
     lbl.TextSize = 12
     lbl.TextXAlignment = Enum.TextXAlignment.Left
     lbl.ZIndex = 403
-    
-    parent:SetAttribute("ItemY", currentY + 35)
-    parent.CanvasSize = UDim2.new(0, 0, 0, currentY + 35 + 10)
+    UpdateCanvas(parent)
 end
 
 local function AddButton(parent, text, callback)
-    local currentY = parent:GetAttribute("ItemY") or 5
     local b = Instance.new("TextButton")
-    b.Size = UDim2.new(1, -20, 0, 30)
-    b.Position = UDim2.new(0, 10, 0, currentY)
+    b.Size = UDim2.new(1, -10, 0, 30)
     b.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
     b.Text = text
     b.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -208,16 +220,12 @@ local function AddButton(parent, text, callback)
     b.Parent = parent
     Instance.new("UICorner", b).CornerRadius = UDim.new(0.2, 0)
     b.MouseButton1Click:Connect(function() pcall(callback) end)
-    
-    parent:SetAttribute("ItemY", currentY + 35)
-    parent.CanvasSize = UDim2.new(0, 0, 0, currentY + 35 + 10)
+    UpdateCanvas(parent)
 end
 
 local function AddToggle(parent, text, default, callback)
-    local currentY = parent:GetAttribute("ItemY") or 5
     local f = Instance.new("Frame")
-    f.Size = UDim2.new(1, -20, 0, 30)
-    f.Position = UDim2.new(0, 10, 0, currentY)
+    f.Size = UDim2.new(1, -10, 0, 30)
     f.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
     f.BorderSizePixel = 0
     f.ZIndex = 402
@@ -253,16 +261,12 @@ local function AddToggle(parent, text, default, callback)
         tBtn.BackgroundColor3 = state and Color3.fromRGB(0, 255, 255) or Color3.fromRGB(80, 80, 80)
         if callback then pcall(callback, state) end
     end)
-    
-    parent:SetAttribute("ItemY", currentY + 35)
-    parent.CanvasSize = UDim2.new(0, 0, 0, currentY + 35 + 10)
+    UpdateCanvas(parent)
 end
 
 local function AddDropdown(parent, text, options, default, callback)
-    local currentY = parent:GetAttribute("ItemY") or 5
     local b = Instance.new("TextButton")
-    b.Size = UDim2.new(1, -20, 0, 30)
-    b.Position = UDim2.new(0, 10, 0, currentY)
+    b.Size = UDim2.new(1, -10, 0, 30)
     b.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
     b.Text = text .. ": " .. tostring(default)
     b.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -282,9 +286,7 @@ local function AddDropdown(parent, text, options, default, callback)
         b.Text = text .. ": " .. tostring(options[idx])
         if callback then pcall(callback, options[idx]) end
     end)
-    
-    parent:SetAttribute("ItemY", currentY + 35)
-    parent.CanvasSize = UDim2.new(0, 0, 0, currentY + 35 + 10)
+    UpdateCanvas(parent)
 end
 
 -- ============================================================
@@ -1128,4 +1130,4 @@ task.spawn(function()
     end
 end)
 
-print("[HDanh×Redz] FULL 100% Fixed Layout | SEA " .. tostring(SEA))
+print("[HDanh×Redz] FULL 100% Fixed (UIListLayout) | SEA " .. tostring(SEA))
